@@ -2,6 +2,10 @@
     <head>
         <meta charset="utf-8"/>
         <script src="wasm_exec.js"></script>
+
+        <script src="bridge.js"></script>
+        <script src="peerConn.js"></script>
+
         <script>
             const go = new Go();
             WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
