@@ -1,20 +1,20 @@
 package main
 
 type peerDiscovery struct {
-	service string
+    service string
 }
 
 func NewPeerDiscovery(service string) (*peerDiscovery) {
-	return &peerDiscovery{service: service}
+    return &peerDiscovery{service: service}
 }
 
 type peer struct {
-	host string
+    host string
 }
 
 func (pd *peerDiscovery) GetPeers() ([]peer, error) {
-	peers := make([]peer, 1)
-	peers[0] = peer{host: "deadbeef"}
-	return peers, nil
+    peers := make([]peer, 1)
+    peers[0] = peer{host: "deadbeef"}
+    return peers, nil
 }
 
