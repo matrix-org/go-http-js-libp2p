@@ -13,11 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-global.bridge = {
-    newPeerTransport: () => {
-        return new PeerTransport();
-    },
-    newPeerListener: () => {
-        return new PeerListener();
-    },
+class PeerListener {
+
+    constructor() {
+        // register our new listener so that JS can tell it about new conns
+        global.peerListener = this;
+    }
+
+    // implemented in Go
+    // onPeerConn() {}
 }

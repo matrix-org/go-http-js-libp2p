@@ -15,8 +15,40 @@
 
 class PeerTransport {
 
-    roundTrip(req) {
+    async roundTrip(req) {
         console.log("<<< ", req)
+
+        // loopback straight to the peerListener
+        const listener = global.peerListener
+        if (!listener) {
+            console.fatal("no peerListener!")
+        }
+        if (!listener.onPeerConn) {
+            console.fatal("no onPeerConn!")
+        }
+
+        const conn = new PeerConn("0.0.0.0", "0.0.0.0")
+        listener.onPeerConn(conn)
+
+        const reqString = `HTTP/1.0 ${req.method} ${req.url}\r\n\r\n${req.body}`
+        console.log("trying to send request", reqString)
+        conn.fillRead(req)
+        console.log("sent request", reqString)
+
+        console.log("trying to read response")
+        const respString = await conn.consumeWrite()
+        console.log("read response", respString)
+        const m = respString.match(/^(HTTP\/1.0 (.*?)( .*)?)\r\n(.*)?(\r\n\r\n(.*))?$/)
+        if (!m) {
+            console.fatal("couldn't parse resp", respString)
+        }
+        const resp = {
+            "status": m[1],
+            "statusCode": m[2],
+            "body": m[6],
+        }
+
+        /*
         const resp = {
             "status": "HTTP/1.0 200 OK",
             "statusCode": 200,
@@ -26,6 +58,8 @@ class PeerTransport {
             "body": "I am a fish",
         }
         console.log(">>> ", resp)
+        */
+
         return resp
     }
 }
