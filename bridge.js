@@ -1,5 +1,5 @@
 global.bridge = {
-    newPeerConn: (localAddr, remoteAddr) => {
-        return new PeerConn(localAddr, remoteAddr);
+    newPeerTransport: () => {
+        return new PeerTransport();
     },
 }

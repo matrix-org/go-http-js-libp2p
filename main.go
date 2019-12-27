@@ -1,7 +1,6 @@
 package main
 
 import "fmt"
-import "time"
 import "log"
 import "io/ioutil"
 import "net/http"
@@ -23,18 +22,8 @@ func main() {
 
     // due to https://github.com/golang/go/issues/27495 we can't override the DialContext
     // instead we have to provide a whole custom transport.
-    transport := &http.Transport{}
-    peerTransport:= &http.Transport{
-        DialContext:  NewPeerDialer().DialContext,
-        ForceAttemptHTTP2:     true,
-        MaxIdleConns:          100,
-        IdleConnTimeout:       90 * time.Second,
-        TLSHandshakeTimeout:   10 * time.Second,
-        ExpectContinueTimeout: 1 * time.Second,
-    }
-    transport.RegisterProtocol("libp2phttp", peerTransport)
     client := &http.Client{
-        Transport: transport,
+        Transport: NewPeerTransport(),
     }
 
     // try to ping all the peers
