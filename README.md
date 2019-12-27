@@ -5,7 +5,7 @@ for tunnelling HTTP requests/responses in-browser from go-wasm over js-libp2p.
 
 To run:
 
-```
+```bash
 GOOS=js GOARCH=wasm go build -o main.wasm
 cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .
 go get -u github.com/shurcooL/goexec
