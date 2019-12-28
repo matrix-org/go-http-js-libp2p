@@ -30,22 +30,24 @@ class PeerTransport {
         const conn = new PeerConn("0.0.0.0", "0.0.0.0")
         listener.onPeerConn(conn)
 
-        const reqString = `HTTP/1.0 ${req.method} ${req.url}\r\n\r\n${req.body}`
+        const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
         console.log("trying to send request", reqString)
-        conn.fillRead(req)
+        conn.fillRead(reqString)
         console.log("sent request", reqString)
 
         console.log("trying to read response")
         const respString = await conn.consumeWrite()
         console.log("read response", respString)
-        const m = respString.match(/^(HTTP\/1.0 (.*?)( .*)?)\r\n(.*)?(\r\n\r\n(.*))?$/)
+        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))\r\n(.*)?(\r\n\r\n(.*?))$/s)
         if (!m) {
             console.fatal("couldn't parse resp", respString)
         }
+        const headers = m[5]
         const resp = {
-            "status": m[1],
-            "statusCode": m[2],
-            "body": m[6],
+            "proto": m[1],
+            "status": m[2],
+            "statusCode": parseInt(m[3]),
+            "body": m[7],
         }
 
         /*

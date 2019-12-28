@@ -14,49 +14,71 @@
 // limitations under the License.
 
 class PeerConn {
-
     localAddr
     remoteAddr
+
+    readBuf = ''
+    writeBuf = ''
+
+    readPromise
+    writePromise
+
+    readResolve
+    writeResolve
 
     constructor(localAddr, remoteAddr) {
         console.log("created PeerConn", localAddr, remoteAddr)
         this.localAddr = localAddr
         this.remoteAddr = remoteAddr
+
+        this.resetReadPromise()
+        this.resetWritePromise()
     }
 
-    readBuf = ''
-    writeBuf = ''
+    resetReadPromise() {
+        this.readPromise = new Promise((resolve, reject) => { this.readResolve = resolve })
+    }
 
-    writePromise = new Promise((resolve,reject)=>{ console.log("done"); resolve(); })
+    resetWritePromise() {
+        this.writePromise = new Promise((resolve, reject) => { this.writeResolve = resolve })
+    }
 
     fillRead(data) {
+        console.log("filling readBuf with ", data)
         this.readBuf = this.readBuf.concat(data)
+        this.readResolve()
+        this.resetReadPromise()
     }
 
     fillWrite(data) {
+        console.log("filling writeBuf with ", data)
         this.writeBuf = this.writeBuf.concat(data)
-        this.writePromise.resolve()
-        this.writePromise = new Promise((resolve,reject)=>{ console.log("done"); resolve(); })
+        this.writeResolve()
+        this.resetWritePromise()
     }
 
     async consumeWrite() {
         console.log("awaiting writePromise")
         await this.writePromise
         console.log("awaited writePromise")
+        console.log("consuming writeBuf = ", this.writeBuf)
         const data = this.writeBuf
         this.writeBuf = ''
         return data
     }
 
-    read() {
-        console.log("<<< ", this.readBuf)
+    async read() {
+        console.log("awaiting readPromise")
+        await this.readPromise
+        console.log("awaited readPromise")
+        console.log("reading readBuf = ", this.readBuf)
         const data = this.readBuf
         this.readBuf = ''
         return data
     }
 
     write(buf) {
-        console.log(">>> ", buf)
+        console.log("queuing buf for write: ", buf)
         this.fillWrite(buf)
         return
     }

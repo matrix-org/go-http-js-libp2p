@@ -50,7 +50,7 @@ func client() {
 
 	// try to ping all the peers
 	for _, peer := range peers {
-		resp, err := client.Get(fmt.Sprintf("libp2phttp://%s/ping", peer.host))
+		resp, err := client.Get(fmt.Sprintf("http://%s/ping", peer.host))
 		if err != nil {
 			log.Fatal("Can't make request")
 		}
