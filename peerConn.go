@@ -71,7 +71,7 @@ func (pc peerConn) Read(b []byte) (n int, err error) {
 		log.Fatal("Failed to read")
 	}
 	log.Printf("Read from peerConn: %s\n", val.String())
-	buf := []byte(val.String()) 
+	buf := []byte(val.String())
 	c := copy(b, buf)
 	if c < len(buf) {
 		log.Fatal("Insufficient read buffer; dropping data")
@@ -103,7 +103,6 @@ func (pc peerConn) LocalAddr() net.Addr {
 func (pc peerConn) RemoteAddr() net.Addr {
 	return pc.remoteAddr
 }
-
 
 // SetDeadline sets the read and write deadlines associated
 // with the connection. It is equivalent to calling both

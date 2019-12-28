@@ -1,12 +1,12 @@
 // -*- coding: utf-8 -*-
 // Copyright 2019 New Vector Ltd
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,46 +19,44 @@ import "net"
 import "syscall/js"
 
 type peerListener struct {
-    jsPeerListener js.Value
-    newConn chan peerConn
+	jsPeerListener js.Value
+	newConn        chan peerConn
 }
 
-func NewPeerListener() (*peerListener) {
-    bridge := js.Global().Get("bridge")
+func NewPeerListener() *peerListener {
+	bridge := js.Global().Get("bridge")
 
-    pl := &peerListener{
-        jsPeerListener: bridge.Call("newPeerListener"),
-        newConn: make(chan peerConn),
-    }
+	pl := &peerListener{
+		jsPeerListener: bridge.Call("newPeerListener"),
+		newConn:        make(chan peerConn),
+	}
 
-    pl.jsPeerListener.Set("onPeerConn", js.FuncOf(pl.onPeerConn))
+	pl.jsPeerListener.Set("onPeerConn", js.FuncOf(pl.onPeerConn))
 
-    return pl
+	return pl
 }
 
 func (pl *peerListener) onPeerConn(this js.Value, inputs []js.Value) interface{} {
-    jsConn := inputs[0]
-    conn := NewPeerConn(jsConn)
-    pl.newConn <- *conn
-    return nil
+	jsConn := inputs[0]
+	conn := NewPeerConn(jsConn)
+	pl.newConn <- *conn
+	return nil
 }
 
 // Accept waits for and returns the next connection to the listener.
 func (pl *peerListener) Accept() (net.Conn, error) {
-    // block until we get told by JS about a new connection
-    conn := <-pl.newConn
-    return conn, nil
+	// block until we get told by JS about a new connection
+	conn := <-pl.newConn
+	return conn, nil
 }
 
 // Close closes the listener.
 // Any blocked Accept operations will be unblocked and return errors.
 func (pl *peerListener) Close() error {
-    return nil
+	return nil
 }
 
 // Addr returns the listener's network address.
 func (pl *peerListener) Addr() net.Addr {
-    return nil
+	return nil
 }
-
-

@@ -107,7 +107,6 @@ func Await(v js.Value) (result js.Value, ok bool) {
 	return
 }
 
-
 /////////////
 
 type peerReadCloser struct {
