@@ -21,14 +21,16 @@ import "syscall/js"
 type peerListener struct {
 	jsPeerListener js.Value
 	newConn        chan peerConn
+	peerLocalNode  *peerLocalNode
 }
 
-func NewPeerListener() *peerListener {
+func NewPeerListener(peerLocalNode *peerLocalNode) *peerListener {
 	bridge := js.Global().Get("bridge")
 
 	pl := &peerListener{
-		jsPeerListener: bridge.Call("newPeerListener"),
+		jsPeerListener: bridge.Call("newPeerListener", peerLocalNode.Js()),
 		newConn:        make(chan peerConn),
+		peerLocalNode:	peerLocalNode,
 	}
 
 	pl.jsPeerListener.Set("onPeerConn", js.FuncOf(pl.onPeerConn))

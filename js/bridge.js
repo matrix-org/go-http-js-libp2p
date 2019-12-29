@@ -13,13 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-class PeerListener {
-
-    constructor() {
-        // register our new listener so that JS can tell it about new conns
-        global.peerListener = this;
+global.bridge = {
+    async newPeerLocalNode: () => {
+        const peerLocalNode = new PeerLocalNode()
+        await init()
+        return peerLocalNode
     }
-
-    // implemented in Go
-    // onPeerConn() {}
+    newPeerTransport: (peerLocalNode) => {
+        return new PeerTransport(peerLocalNode)
+    },
+    newPeerListener: (peerLocalNode) => {
+        return new PeerListener(peerLocalNode)
+    },
 }

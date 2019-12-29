@@ -23,13 +23,15 @@ import "net/http"
 import "syscall/js"
 
 type peerTransport struct {
+	peerLocalNode *peerLocalNode
 	jsPeerTransport js.Value
 }
 
-func NewPeerTransport() *peerTransport {
+func NewPeerTransport(peerLocalNode *peerLocalNode) *peerTransport {
 	bridge := js.Global().Get("bridge")
 	pt := &peerTransport{
-		jsPeerTransport: bridge.Call("newPeerTransport"),
+		peerLocalNode: peerLocalNode,
+		jsPeerTransport: bridge.Call("newPeerTransport", peerLocalNode.Js()),
 	}
 	return pt
 }

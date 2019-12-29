@@ -1,0 +1,4 @@
+TODO:
+
+* rename the peer* classes to not clash with libp2p's terminology of peerInfo, etc
+* sort the addressing to be used

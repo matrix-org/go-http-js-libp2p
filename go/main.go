@@ -27,30 +27,18 @@ func init() {
 }
 
 func main() {
-	server()
-	client()
-	<-c
-}
-
-func client() {
-	// discover some hosts to talk to
-	pd := NewPeerDiscovery("matrix")
-	peers, err := pd.GetPeers()
-	if err != nil {
-		log.Fatal("Can't get peers")
-	}
-
-	log.Println("starting client")
+	node := NewPeerLocalNode("matrix")
+	server(node)
 
 	// due to https://github.com/golang/go/issues/27495 we can't override the DialContext
 	// instead we have to provide a whole custom transport.
 	client := &http.Client{
-		Transport: NewPeerTransport(),
+		Transport: NewPeerTransport(node),
 	}
 
-	// try to ping all the peers
-	for _, peer := range peers {
-		resp, err := client.Get(fmt.Sprintf("http://%s/ping", peer.host))
+	// try to ping every peer that we discover
+	node.registerPeerDiscover(func(pi *peerInfo) {
+		resp, err := client.Get(fmt.Sprintf("libp2p-http-rpc://%s/ping", pi.Id))
 		if err != nil {
 			log.Fatal("Can't make request")
 		}
@@ -64,19 +52,20 @@ func client() {
 			bodyString := string(bodyBytes)
 			log.Print(bodyString)
 		}
-	}
+
+	})
+
+	<-c
 }
 
-func server() {
-	// todo: NewPeerAnnouncer
-
+func server(node *peerLocalNode) {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "pong")
 	})
 
 	log.Println("starting server")
 
-	listener := NewPeerListener()
+	listener := NewPeerListener(node)
 	s := &http.Server{}
 	go s.Serve(listener)
 }
