@@ -13,7 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// An pipe which has a go net.Conn implementation on one end
+// and a JS pull-stream implementation on the other.
 class PeerConn {
+
     localAddr
     remoteAddr
 
@@ -21,10 +24,9 @@ class PeerConn {
     writeBuf = ''
 
     readPromise
-    writePromise
-
     readResolve
-    writeResolve
+
+    writeCb
 
     constructor(localAddr, remoteAddr) {
         console.log("created PeerConn", localAddr, remoteAddr)
@@ -32,15 +34,10 @@ class PeerConn {
         this.remoteAddr = remoteAddr
 
         this.resetReadPromise()
-        this.resetWritePromise()
     }
 
     resetReadPromise() {
         this.readPromise = new Promise((resolve, reject) => { this.readResolve = resolve })
-    }
-
-    resetWritePromise() {
-        this.writePromise = new Promise((resolve, reject) => { this.writeResolve = resolve })
     }
 
     fillRead(data) {
@@ -53,20 +50,37 @@ class PeerConn {
     fillWrite(data) {
         console.log("filling writeBuf with ", data)
         this.writeBuf = this.writeBuf.concat(data)
-        this.writeResolve()
-        this.resetWritePromise()
+        if (this.writeCb) {
+            this.writeCb(null, this.writeBuf)
+            this.writeBuf = ''
+            this.writeCb = undefined
+        }
     }
 
-    async consumeWrite() {
-        console.log("awaiting writePromise")
-        await this.writePromise
-        console.log("awaited writePromise")
-        console.log("consuming writeBuf = ", this.writeBuf)
-        const data = this.writeBuf
-        this.writeBuf = ''
-        return data
+    // pullstream-compatible way to consume the data written into the connection by Go
+    consumeWriteSource(end, cb) {
+        if (end) return cb(end)
+        if (this.writeBuf.length > 0) {
+            cb(null, this.writeBuf)
+            this.writeBuf = ''
+        }
+        else {
+            // defer the callback
+            this.writeCb = cb
+        }
     }
 
+    // pullstream-compatible way to add data into the connection to be read by Go
+    fillReadSink(read) {
+        read(null, function next(end, data) {
+            if (end === true) return
+            if (end) throw end
+            this.fillRead(data)
+            read(null, next)
+        })
+    }
+
+    // used by Go to read from this connection
     async read() {
         console.log("awaiting readPromise")
         await this.readPromise
@@ -77,6 +91,7 @@ class PeerConn {
         return data
     }
 
+    // used by Go to write to this connection
     write(buf) {
         console.log("queuing buf for write: ", buf)
         this.fillWrite(buf)

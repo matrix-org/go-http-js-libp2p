@@ -14,10 +14,12 @@
 // limitations under the License.
 
 import { pull } from "pull-stream"
+import { string as concat } from "pull-concat/string"
 import Pushable from "pull-pushable"
 const p = Pushable()
 
 import { promisify } from "es6-promisify"
+
 
 class PeerTransport {
 
@@ -52,14 +54,17 @@ class PeerTransport {
         // but we can't because https://github.com/golang/go/issues/27495
         const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
         pull(
-            reqString,
+            pull.values([reqString]),
             conn
         )
 
         const respString
         pull(
             conn,
-            respString
+            concat((err, data) => {
+                if (err) throw err
+                respString = data
+            }
         )
 
         const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))\r\n(.*)?(\r\n\r\n(.*?))$/s)

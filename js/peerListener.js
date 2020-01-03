@@ -38,11 +38,11 @@ class PeerListener {
   
             pull(
                 conn,
-                pull.drain(peerConn)
+                pull.drain(peerConn.fillReadSink)
             )
 
             pull(
-                peerConn,
+                peerConn.consumeWriteSource,
                 pull.drain(conn)
             )
         })        
