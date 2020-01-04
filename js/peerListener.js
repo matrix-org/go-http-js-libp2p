@@ -17,9 +17,9 @@ import { pull } from "pull-stream"
 import Pushable from "pull-pushable"
 const p = Pushable()
 
-class PeerListener {
+import PeerConn from './peerConn.js'
 
-    peerLocalNode
+export default class PeerListener {
 
     constructor(peerLocalNode) {
         this.peerLocalNode = peerLocalNode

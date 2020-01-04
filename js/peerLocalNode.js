@@ -21,9 +21,7 @@ import Node from "./browser-bundle"
 import { promisify } from "es6-promisify"
 const createPeerInfo = promisify(PeerInfo.create);
 
-class PeerLocalNode {
-    node
-    peerInfo
+export default class PeerLocalNode {
 
     async init() {
         this.peerInfo = await createPeerInfo()

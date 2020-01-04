@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import PeerListener from './peerListener.js'
+import PeerLocalNode from './peerLocalNode.js'
+import PeerTransport from './peerTransport.js'
+
 global.bridge = {
-    async newPeerLocalNode: () => {
+    newPeerLocalNode: async () => {
         const peerLocalNode = new PeerLocalNode()
         await init()
         return peerLocalNode
-    }
+    },
     newPeerTransport: (peerLocalNode) => {
         return new PeerTransport(peerLocalNode)
     },

@@ -15,23 +15,20 @@
 
 // An pipe which has a go net.Conn implementation on one end
 // and a JS pull-stream implementation on the other.
-class PeerConn {
-
-    localAddr
-    remoteAddr
-
-    readBuf = ''
-    writeBuf = ''
-
-    readPromise
-    readResolve
-
-    writeCb
+export default class PeerConn {
 
     constructor(localAddr, remoteAddr) {
         console.log("created PeerConn", localAddr, remoteAddr)
         this.localAddr = localAddr
         this.remoteAddr = remoteAddr
+
+        this.readBuf = ''
+        this.writeBuf = ''
+
+        this.readPromise = undefined
+        this.readResolve = undefined
+
+        this.writeCb = undefined
 
         this.resetReadPromise()
     }

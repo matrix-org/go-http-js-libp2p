@@ -21,9 +21,7 @@ const p = Pushable()
 import { promisify } from "es6-promisify"
 
 
-class PeerTransport {
-
-    peerLocalNode
+export default class PeerTransport {
 
     constructor(peerLocalNode) {
         this.peerLocalNode = peerLocalNode
@@ -55,16 +53,16 @@ class PeerTransport {
         const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
         pull(
             pull.values([reqString]),
-            conn
+            conn,
         )
 
-        const respString
+        let respString
         pull(
             conn,
             concat((err, data) => {
                 if (err) throw err
                 respString = data
-            }
+            }),
         )
 
         const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))\r\n(.*)?(\r\n\r\n(.*?))$/s)
