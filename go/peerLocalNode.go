@@ -76,8 +76,8 @@ func (pn *peerLocalNode) onPeerConnect(this js.Value, inputs []js.Value) interfa
 
 func (pn *peerLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
-	if pn.handlePeerDiscover != nil {
-		pn.handlePeerConnect(pi)
+	if pn.handlePeerDisconnect != nil {
+		pn.handlePeerDisconnect(pi)
 	}
 	return nil
 }

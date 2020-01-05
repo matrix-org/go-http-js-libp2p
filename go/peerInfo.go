@@ -25,7 +25,7 @@ type peerInfo struct {
 func NewPeerInfo(jsPeerInfo js.Value) *peerInfo {
 	pi := &peerInfo{
 		jsPeerInfo: jsPeerInfo,
-		Id: jsPeerInfo.Get("id").Invoke("toB58String").String(),
+		Id: jsPeerInfo.Get("id").Call("toB58String").String(),
 	}
 	return pi
 }

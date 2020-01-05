@@ -20,7 +20,7 @@ import PeerTransport from './peerTransport.js'
 global.bridge = {
     newPeerLocalNode: async () => {
         const peerLocalNode = new PeerLocalNode()
-        await init()
+        await peerLocalNode.init()
         return peerLocalNode
     },
     newPeerTransport: (peerLocalNode) => {

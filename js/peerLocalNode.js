@@ -24,7 +24,7 @@ const createPeerInfo = promisify(PeerInfo.create);
 export default class PeerLocalNode {
 
     async init() {
-        this.peerInfo = await createPeerInfo()
+        const peerInfo = await createPeerInfo()
 
         const peerIdStr = peerInfo.id.toB58String() 
         const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`
@@ -41,23 +41,23 @@ export default class PeerLocalNode {
 
         node.idStr = peerIdStr
 
-        node.on('peer:discovery', (peerInfo) => {
-            console.log('Discovered a peer:', peerInfo.id.toB58String())
+        node.on('peer:discovery', (pi) => {
+            console.log('Discovered a peer:', pi.id.toB58String())
             // tell go
-            if (this.onPeerDiscover) this.onPeerDiscover(peerInfo)
+            if (this.onPeerDiscover) this.onPeerDiscover(pi)
         })
 
-        node.on('peer:connect', (peerInfo) => {
-            const idStr = peerInfo.id.toB58String()
+        node.on('peer:connect', (pi) => {
+            const idStr = pi.id.toB58String()
             console.log('Got connection to: ' + idStr)
             // tell go
-            if (this.onPeerConnect) this.onPeerConnect(peerInfo)
+            if (this.onPeerConnect) this.onPeerConnect(pi)
         })
 
-        node.on('peer:disconnect', (peerInfo) => {
-            const idStr = peerInfo.id.toB58String()
+        node.on('peer:disconnect', (pi) => {
+            const idStr = pi.id.toB58String()
             // tell go
-            if (this.onPeerDisonnect) this.onPeerDisconnect(peerInfo)
+            if (this.onPeerDisonnect) this.onPeerDisconnect(pi)
         })
 
         node.start((err) => {
