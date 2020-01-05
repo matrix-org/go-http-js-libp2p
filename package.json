@@ -4,14 +4,14 @@
   "description": "HTTP over js-libp2p from go-wasm",
   "main": "js/index.js",
   "scripts": {
-    "build": "webpack js/bridge.js",
-    "serve": "static public -p 9090 -H '{\"Cache-Control\": \"no-cache, must-revalidate\"}'"
+    "build": "webpack",
+    "start": "webpack-dev-server"
   },
   "license": "Apache 2.0",
   "devDependencies": {
-    "node-static": "~0.7.10",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
     "es6-promisify": "^6.0.2",

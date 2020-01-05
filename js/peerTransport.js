@@ -65,7 +65,7 @@ export default class PeerTransport {
             }),
         )
 
-        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))\r\n(.*)?(\r\n\r\n(.*?))$/s)
+        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))\r\n(.*)?(\r\n\r\n(.*?))$/)
         if (!m) {
             console.fatal("couldn't parse resp", respString)
         }
