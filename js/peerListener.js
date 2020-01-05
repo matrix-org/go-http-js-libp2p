@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
 // limitations under the License.
 
 import { pull } from "pull-stream"
-import Pushable from "pull-pushable"
-const p = Pushable()
 
 import PeerConn from './peerConn.js'
 
@@ -29,12 +27,6 @@ export default class PeerListener {
             // create the go-server-facing side of the connection
             const peerConn = new PeerConn(conn.source, conn.dest)
             this.onPeerConn(peerConn)
-
-            // wire the libp2p conn <-> the go-server
-            pull(
-                p,
-                conn
-            )
   
             pull(
                 conn,

@@ -14,6 +14,7 @@
     "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
+    "cids": "^0.7.1",
     "es6-promisify": "^6.0.2",
     "libp2p": "~0.26.2",
     "libp2p-bootstrap": "~0.9.7",
@@ -25,6 +26,7 @@
     "libp2p-webrtc-star": "~0.15.8",
     "libp2p-websocket-star": "~0.10.2",
     "libp2p-websockets": "~0.12.2",
+    "multihashing-async": "^0.8.0",
     "peer-info": "~0.15.1",
     "pull-concat": "^1.1.1"
   }

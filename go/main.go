@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ func init() {
 }
 
 func main() {
-	node := NewPeerLocalNode("matrix")
+	node := NewPeerLocalNode("org.matrix.p2p.experiment")
 	server(node)
 
 	// due to https://github.com/golang/go/issues/27495 we can't override the DialContext
@@ -36,8 +36,9 @@ func main() {
 		Transport: NewPeerTransport(node),
 	}
 
-	// try to ping every peer that we discover
-	node.registerPeerDiscover(func(pi *peerInfo) {
+	// try to ping every peer that we discover which supports this service
+	node.registerFoundProvider(func(pi *peerInfo) {
+		log.Printf("Trying to GET libp2p-http-rpc://%s/ping", pi.Id)
 		resp, err := client.Get(fmt.Sprintf("libp2p-http-rpc://%s/ping", pi.Id))
 		if err != nil {
 			log.Fatal("Can't make request")
@@ -52,7 +53,6 @@ func main() {
 			bodyString := string(bodyBytes)
 			log.Print(bodyString)
 		}
-
 	})
 
 	<-c

@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,11 +17,17 @@
 
 import PeerInfo from "peer-info"
 import Node from "./browser-bundle"
+import CID from "cids"
+import multihashing from "multihashing-async"
 
 import { promisify } from "es6-promisify"
 const createPeerInfo = promisify(PeerInfo.create);
 
 export default class PeerLocalNode {
+
+    constructor(service) {
+        this.service = service
+    }
 
     async init() {
         const peerInfo = await createPeerInfo()
@@ -42,14 +48,14 @@ export default class PeerLocalNode {
         node.idStr = peerIdStr
 
         node.on('peer:discovery', (pi) => {
-            console.log('Discovered a peer:', pi.id.toB58String())
+            //console.log('Discovered a peer:', pi.id.toB58String())
             // tell go
             if (this.onPeerDiscover) this.onPeerDiscover(pi)
         })
 
         node.on('peer:connect', (pi) => {
             const idStr = pi.id.toB58String()
-            console.log('Got connection to: ' + idStr)
+            //console.log('Got connection to: ' + idStr)
             // tell go
             if (this.onPeerConnect) this.onPeerConnect(pi)
         })
@@ -60,15 +66,35 @@ export default class PeerLocalNode {
             if (this.onPeerDisonnect) this.onPeerDisconnect(pi)
         })
 
+        const findProviders = () => {
+            node.contentRouting.findProviders(cid, { maxTimeout: 5000 }, (err, providers) => {
+                if (err) { throw err }
+                console.log('Found provider:', providers[0].id.toB58String())
+                if (this.onFoundProvider) this.onFoundProvider(providers[0])
+                findProviders()
+            })
+        }
+
+        const hash = await multihashing(Buffer.from(this.service), 'sha2-256')
+        const cid = new CID(1, 'dag-pb', hash)
+
         node.start((err) => {
             if (err) {
                 return console.log(err)
             }
 
+            // advertise our magic CID to announce our participation in this specific network
+            node.contentRouting.provide(cid, (err) => {
+                if (err) { throw err }
+                console.log('Node %s is providing %s', peerIdStr, cid.toBaseEncodedString())
+            })
+
             console.log(`Node ${peerIdStr} is listening o/`)
             node.peerInfo.multiaddrs.toArray().forEach(ma => {
                 console.log("Listening on: ", ma.toString())
             })
+
+            findProviders()
 
             // NOTE: to stop the node
             // node.stop((err) => {})
@@ -79,4 +105,5 @@ export default class PeerLocalNode {
     // onPeerDiscover(peerInfo) {}
     // onPeerConnect(peerInfo) {}
     // onPeerDisconnect(peerInfo) {}
+    // onFoundProvider(peerInfo) {}
 }

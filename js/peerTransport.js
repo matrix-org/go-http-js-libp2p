@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 
 import { pull } from "pull-stream"
 import { string as concat } from "pull-concat/string"
-import Pushable from "pull-pushable"
-const p = Pushable()
 
 import { promisify } from "es6-promisify"
 
@@ -40,12 +38,6 @@ export default class PeerTransport {
         const node = peerLocalNode.node
         const dial = promisify(node.dialProtocol)
         const conn = await dial(destPeerInfo, '/libp2p-http-rpc/1.0.0')
-
-        // Write operation. Data sent as a buffer
-        pull(
-            p,
-            conn
-        )
 
         // the world's dumbest HTTP client.
         // it would be much better to hook up go's HTTP client (and then we'd get HTTP/2 etc)

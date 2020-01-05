@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import PeerLocalNode from './peerLocalNode.js'
 import PeerTransport from './peerTransport.js'
 
 global.bridge = {
-    newPeerLocalNode: async () => {
-        const peerLocalNode = new PeerLocalNode()
+    newPeerLocalNode: async (service) => {
+        const peerLocalNode = new PeerLocalNode(service)
         await peerLocalNode.init()
         return peerLocalNode
     },
@@ -30,3 +30,5 @@ global.bridge = {
         return new PeerListener(peerLocalNode)
     },
 }
+
+//bridge.newPeerLocalNode("matrix")

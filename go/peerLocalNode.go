@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,12 +26,13 @@ type peerLocalNode struct {
 	handlePeerDiscover func(*peerInfo)
 	handlePeerConnect func(*peerInfo)
 	handlePeerDisconnect func(*peerInfo)
+	handleFoundProvider func(*peerInfo)
 }
 
 func NewPeerLocalNode(service string) *peerLocalNode {
 	bridge := js.Global().Get("bridge")
 
-	jsPeerLocalNode, ok := Await(bridge.Call("newPeerLocalNode"))
+	jsPeerLocalNode, ok := Await(bridge.Call("newPeerLocalNode", service))
 	if !ok {
 		log.Fatal("couldn't create newPeerLocalNode")
 	}
@@ -45,6 +46,7 @@ func NewPeerLocalNode(service string) *peerLocalNode {
 	pn.jsPeerLocalNode.Set("onPeerDiscover", js.FuncOf(pn.onPeerDiscover))
 	pn.jsPeerLocalNode.Set("onPeerConnect", js.FuncOf(pn.onPeerConnect))
 	pn.jsPeerLocalNode.Set("onPeerDisconnect", js.FuncOf(pn.onPeerDisconnect))
+	pn.jsPeerLocalNode.Set("onFoundProvider", js.FuncOf(pn.onFoundProvider))
 
 	return pn
 }
@@ -82,6 +84,14 @@ func (pn *peerLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) inte
 	return nil
 }
 
+func (pn *peerLocalNode) onFoundProvider(this js.Value, inputs []js.Value) interface{} {
+	pi := NewPeerInfo(inputs[0])
+	if pn.handleFoundProvider != nil {
+		pn.handleFoundProvider(pi)
+	}
+	return nil
+}
+
 func (pn *peerLocalNode) registerPeerDiscover(handler func(*peerInfo)) {
 	pn.handlePeerDiscover = handler
 }
@@ -92,4 +102,8 @@ func (pn *peerLocalNode) registerPeerConnect(handler func(*peerInfo)) {
 
 func (pn *peerLocalNode) registerPeerDisconnect(handler func(*peerInfo)) {
 	pn.handlePeerDisconnect = handler
+}
+
+func (pn *peerLocalNode) registerFoundProvider(handler func(*peerInfo)) {
+	pn.handleFoundProvider = handler
 }
