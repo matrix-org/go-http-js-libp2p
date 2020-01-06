@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,14 +21,16 @@ import "syscall/js"
 type peerListener struct {
 	jsPeerListener js.Value
 	newConn        chan peerConn
+	peerLocalNode  *peerLocalNode
 }
 
-func NewPeerListener() *peerListener {
+func NewPeerListener(peerLocalNode *peerLocalNode) *peerListener {
 	bridge := js.Global().Get("bridge")
 
 	pl := &peerListener{
-		jsPeerListener: bridge.Call("newPeerListener"),
+		jsPeerListener: bridge.Call("newPeerListener", peerLocalNode.Js()),
 		newConn:        make(chan peerConn),
+		peerLocalNode:	peerLocalNode,
 	}
 
 	pl.jsPeerListener.Set("onPeerConn", js.FuncOf(pl.onPeerConn))

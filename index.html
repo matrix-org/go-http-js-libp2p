@@ -1,5 +1,5 @@
 <!--
-Copyright 2019 New Vector Ltd
+Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,12 +18,7 @@ limitations under the License.
     <head>
         <meta charset="utf-8"/>
         <script src="wasm_exec.js"></script>
-
-        <script src="bridge.js"></script>
-        <script src="peerTransport.js"></script>
-        <script src="peerListener.js"></script>
-        <script src="peerConn.js"></script>
-
+        <script src="dist/bundle.js"></script>
         <script>
             const go = new Go();
             WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {

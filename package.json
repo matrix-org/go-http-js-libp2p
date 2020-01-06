@@ -1,0 +1,33 @@
+{
+  "name": "libp2p-http-rpc",
+  "version": "0.1.0",
+  "description": "HTTP over js-libp2p from go-wasm",
+  "main": "js/index.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack-dev-server"
+  },
+  "license": "Apache 2.0",
+  "devDependencies": {
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1"
+  },
+  "dependencies": {
+    "cids": "^0.7.1",
+    "es6-promisify": "^6.0.2",
+    "libp2p": "~0.26.2",
+    "libp2p-bootstrap": "~0.9.7",
+    "libp2p-gossipsub": "~0.0.4",
+    "libp2p-kad-dht": "^0.15.3",
+    "libp2p-mplex": "~0.8.5",
+    "libp2p-secio": "~0.11.1",
+    "libp2p-spdy": "~0.13.3",
+    "libp2p-webrtc-star": "~0.15.8",
+    "libp2p-websocket-star": "~0.10.2",
+    "libp2p-websockets": "~0.12.2",
+    "multihashing-async": "^0.8.0",
+    "peer-info": "~0.15.1",
+    "pull-concat": "^1.1.1"
+  }
+}

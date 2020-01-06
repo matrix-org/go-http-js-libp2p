@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright 2019 New Vector Ltd
+// Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,60 +13,73 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-class PeerConn {
-    localAddr
-    remoteAddr
-
-    readBuf = ''
-    writeBuf = ''
-
-    readPromise
-    writePromise
-
-    readResolve
-    writeResolve
+// An pipe which has a go net.Conn implementation on one end
+// and a JS pull-stream implementation on the other.
+export default class PeerConn {
 
     constructor(localAddr, remoteAddr) {
         console.log("created PeerConn", localAddr, remoteAddr)
         this.localAddr = localAddr
         this.remoteAddr = remoteAddr
 
+        this.readBuf = ''
+        this.writeBuf = ''
+
+        this.readPromise = undefined
+        this.readResolve = undefined
+
+        this.writeCb = undefined
+
         this.resetReadPromise()
-        this.resetWritePromise()
     }
 
     resetReadPromise() {
         this.readPromise = new Promise((resolve, reject) => { this.readResolve = resolve })
     }
 
-    resetWritePromise() {
-        this.writePromise = new Promise((resolve, reject) => { this.writeResolve = resolve })
-    }
-
     fillRead(data) {
-        console.log("filling readBuf with ", data)
+        //console.log("filling readBuf with ", data)
         this.readBuf = this.readBuf.concat(data)
         this.readResolve()
         this.resetReadPromise()
     }
 
     fillWrite(data) {
-        console.log("filling writeBuf with ", data)
+        //console.log("filling writeBuf with ", data)
         this.writeBuf = this.writeBuf.concat(data)
-        this.writeResolve()
-        this.resetWritePromise()
+        if (this.writeCb) {
+            this.writeCb(null, this.writeBuf)
+            this.writeBuf = ''
+            this.writeCb = undefined
+        }
     }
 
-    async consumeWrite() {
-        console.log("awaiting writePromise")
-        await this.writePromise
-        console.log("awaited writePromise")
-        console.log("consuming writeBuf = ", this.writeBuf)
-        const data = this.writeBuf
-        this.writeBuf = ''
-        return data
+    // pullstream-compatible way to consume the data written into the connection by Go
+    consumeWriteSource(end, cb) {
+        if (end) return cb(end)
+        if (this.writeBuf.length > 0) {
+            // FIXME: only return true if the connection is closed and this is the end of the stream
+            cb(true, this.writeBuf)
+            this.writeBuf = ''
+        }
+        else {
+            // defer the callback
+            this.writeCb = cb
+        }
     }
 
+    // pullstream-compatible way to add data into the connection to be read by Go
+    fillReadSink(read) {
+        const self = this;
+        read(null, function next(end, data) {
+            if (end === true) return
+            if (end) throw end
+            self.fillRead(data)
+            read(null, next)
+        })
+    }
+
+    // used by Go to read from this connection
     async read() {
         console.log("awaiting readPromise")
         await this.readPromise
@@ -77,6 +90,7 @@ class PeerConn {
         return data
     }
 
+    // used by Go to write to this connection
     write(buf) {
         console.log("queuing buf for write: ", buf)
         this.fillWrite(buf)
