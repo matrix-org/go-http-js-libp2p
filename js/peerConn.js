@@ -38,14 +38,14 @@ export default class PeerConn {
     }
 
     fillRead(data) {
-        console.log("filling readBuf with ", data)
+        //console.log("filling readBuf with ", data)
         this.readBuf = this.readBuf.concat(data)
         this.readResolve()
         this.resetReadPromise()
     }
 
     fillWrite(data) {
-        console.log("filling writeBuf with ", data)
+        //console.log("filling writeBuf with ", data)
         this.writeBuf = this.writeBuf.concat(data)
         if (this.writeCb) {
             this.writeCb(null, this.writeBuf)

@@ -65,12 +65,12 @@ func NewPeerConn(jsPeerConn js.Value) *peerConn {
 // Read can be made to time out and return an Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
 func (pc peerConn) Read(b []byte) (n int, err error) {
-	log.Println("Awaiting read from JS")
+	//log.Println("Awaiting read from JS")
 	val, ok := Await(pc.jsPeerConn.Call("read"))
 	if ok == false {
 		log.Fatal("Failed to read")
 	}
-	log.Printf("Read from peerConn: %s\n", val.String())
+	//log.Printf("Read from peerConn: %s\n", val.String())
 	buf := []byte(val.String())
 	c := copy(b, buf)
 	if c < len(buf) {
@@ -83,7 +83,7 @@ func (pc peerConn) Read(b []byte) (n int, err error) {
 // Write can be made to time out and return an Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetWriteDeadline.
 func (pc peerConn) Write(b []byte) (n int, err error) {
-	log.Printf("Writing to peerConn: %s\n", string(b))
+	//log.Printf("Writing to peerConn: %s\n", string(b))
 	pc.jsPeerConn.Call("write", string(b))
 	return len(b), nil
 }
