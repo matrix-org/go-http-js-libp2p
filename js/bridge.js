@@ -31,6 +31,7 @@ global.bridge = {
     },
 }
 
+/*
 async function test() {
     const pln = await bridge.newPeerLocalNode("matrix")
     const pt = bridge.newPeerTransport(pln)
@@ -52,3 +53,4 @@ async function test() {
     }
 }
 test();
+*/

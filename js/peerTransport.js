@@ -66,7 +66,7 @@ export default class PeerTransport {
         )
 
         await respPromise
-        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))(\r\n(.*?)?(\r\n\r\n(.*?)))?$/)
+        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))(\r\n([^]*?)?(\r\n\r\n([^]*?)))?$/)
         if (!m) {
             console.warn("couldn't parse resp", respString)
         }

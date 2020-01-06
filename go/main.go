@@ -52,7 +52,7 @@ func main() {
 					log.Fatal(err)
 				}
 				bodyString := string(bodyBytes)
-				log.Print(bodyString)
+				log.Printf("Received body: %s", bodyString)
 			}
 		}()
 	})
