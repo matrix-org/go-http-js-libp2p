@@ -14,7 +14,10 @@
 // limitations under the License.
 
 import { pull } from "pull-stream"
-import { string as concat } from "pull-concat/string"
+import Concat from "pull-concat/string"
+
+import PeerInfo from "peer-info"
+import PeerId from "peer-id"
 
 import { promisify } from "es6-promisify"
 
@@ -29,13 +32,14 @@ export default class PeerTransport {
         console.log("<<< ", req)
 
         // figure out what address we're connecting to
-        const url = new Url(req.url)
-
-        const destPeerInfo = new PeerInfo(url.host)
-        // destPeerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/10333')
+        // we can't use the url npm module, as it lowercases the host
+        // we can't use the browser's Url module, as it doesn't parse hosts for unknown URI schemes
+        const host = (req.url.match(/^libp2p-http-rpc:\/\/(.*?)\//))[1]
+        const destPeerId = PeerId.createFromB58String(host)
+        const destPeerInfo = new PeerInfo(destPeerId)
 
         // dial out over libp2p
-        const node = peerLocalNode.node
+        const node = this.peerLocalNode.node
         const dial = promisify(node.dialProtocol)
         const conn = await dial(destPeerInfo, '/libp2p-http-rpc/1.0.0')
 
@@ -51,7 +55,7 @@ export default class PeerTransport {
         let respString
         pull(
             conn,
-            concat((err, data) => {
+            Concat((err, data) => {
                 if (err) throw err
                 respString = data
             }),

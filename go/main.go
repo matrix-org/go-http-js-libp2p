@@ -38,21 +38,23 @@ func main() {
 
 	// try to ping every peer that we discover which supports this service
 	node.registerFoundProvider(func(pi *peerInfo) {
-		log.Printf("Trying to GET libp2p-http-rpc://%s/ping", pi.Id)
-		resp, err := client.Get(fmt.Sprintf("libp2p-http-rpc://%s/ping", pi.Id))
-		if err != nil {
-			log.Fatal("Can't make request")
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode == http.StatusOK {
-			bodyBytes, err := ioutil.ReadAll(resp.Body)
+		go func() {
+			log.Printf("Trying to GET libp2p-http-rpc://%s/ping", pi.Id)
+			resp, err := client.Get(fmt.Sprintf("libp2p-http-rpc://%s/ping", pi.Id))
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("Can't make request")
 			}
-			bodyString := string(bodyBytes)
-			log.Print(bodyString)
-		}
+			defer resp.Body.Close()
+
+			if resp.StatusCode == http.StatusOK {
+				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Fatal(err)
+				}
+				bodyString := string(bodyBytes)
+				log.Print(bodyString)
+			}
+		}()
 	})
 
 	<-c

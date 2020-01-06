@@ -41,5 +41,5 @@ export default class PeerListener {
     }
 
     // implemented in Go
-    // onPeerConn() {}
+    // onPeerConn(peerConn) {}
 }

@@ -31,4 +31,23 @@ global.bridge = {
     },
 }
 
-//bridge.newPeerLocalNode("matrix")
+async function test() {
+    const pln = await bridge.newPeerLocalNode("matrix")
+    const pt = bridge.newPeerTransport(pln)
+    const pl = bridge.newPeerListener(pln)
+    pln.onFoundProvider = async function(pi) {
+        if (location.hash != '#server') {
+            const req = {
+                url: "libp2p-http-rpc://" + pi.id.toB58String() + "/ping",
+                method: "GET",
+                body: ""
+            }
+            await pt.roundTrip(req)
+        }
+    }
+    pl.onPeerConn = async function(peerConn) {
+        console.log("reading from peerConn:", await peerConn.read())
+        peerConn.write("HTTP/1.0 200 OK")
+    }
+}
+test();

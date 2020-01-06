@@ -33,10 +33,12 @@ export default class PeerLocalNode {
         const peerInfo = await createPeerInfo()
 
         const peerIdStr = peerInfo.id.toB58String() 
-        const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`
-        const wsAddr = `/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star`
+//      const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`
+//      const wsAddr = `/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star`
+//      peerInfo.multiaddrs.add(webrtcAddr)
+//      peerInfo.multiaddrs.add(wsAddr)
 
-        peerInfo.multiaddrs.add(webrtcAddr)
+        const wsAddr = `/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/`
         peerInfo.multiaddrs.add(wsAddr)
 
         const node = new Node({
@@ -48,14 +50,14 @@ export default class PeerLocalNode {
         node.idStr = peerIdStr
 
         node.on('peer:discovery', (pi) => {
-            //console.log('Discovered a peer:', pi.id.toB58String())
+            console.debug('Discovered a peer:', pi.id.toB58String())
             // tell go
             if (this.onPeerDiscover) this.onPeerDiscover(pi)
         })
 
         node.on('peer:connect', (pi) => {
             const idStr = pi.id.toB58String()
-            //console.log('Got connection to: ' + idStr)
+            console.debug('Got connection to: ' + idStr)
             // tell go
             if (this.onPeerConnect) this.onPeerConnect(pi)
         })
@@ -66,17 +68,22 @@ export default class PeerLocalNode {
             if (this.onPeerDisonnect) this.onPeerDisconnect(pi)
         })
 
+        const hash = await multihashing(Buffer.from(this.service), 'sha2-256')
+        const cid = new CID(1, 'dag-pb', hash)
+
         const findProviders = () => {
             node.contentRouting.findProviders(cid, { maxTimeout: 5000 }, (err, providers) => {
                 if (err) { throw err }
-                console.log('Found provider:', providers[0].id.toB58String())
-                if (this.onFoundProvider) this.onFoundProvider(providers[0])
-                findProviders()
+                console.log('Found providers:', providers.map(p => p.id.toB58String()))
+                providers = providers.filter(p => p.id.toB58String() != peerIdStr)
+                if (this.onFoundProvider) {
+                    for (const p of providers) {
+                        this.onFoundProvider(p)
+                    }
+                }
+                setTimeout(findProviders, 5000)
             })
         }
-
-        const hash = await multihashing(Buffer.from(this.service), 'sha2-256')
-        const cid = new CID(1, 'dag-pb', hash)
 
         node.start((err) => {
             if (err) {
