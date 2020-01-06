@@ -17,25 +17,30 @@ import { pull } from "pull-stream"
 
 import PeerConn from './peerConn.js'
 
+import { promisify } from "es6-promisify"
+
 export default class PeerListener {
 
     constructor(peerLocalNode) {
         this.peerLocalNode = peerLocalNode
 
         const node = peerLocalNode.node
-        node.handle('/libp2p-http-rpc/1.0.0', (protocol, conn) => {
+        node.handle('/libp2p-http-rpc/1.0.0', async (protocol, conn) => {
+            const getPeerInfo = promisify(conn.getPeerInfo.bind(conn))
+            const pi = await getPeerInfo()
+
             // create the go-server-facing side of the connection
-            const peerConn = new PeerConn(conn.source, conn.dest)
+            const peerConn = new PeerConn(peerLocalNode.node.idStr, pi.id.toB58String())
             this.onPeerConn(peerConn)
   
             pull(
                 conn,
-                pull.drain(peerConn.fillReadSink)
+                peerConn.fillReadSink.bind(peerConn),
             )
 
             pull(
-                peerConn.consumeWriteSource,
-                pull.drain(conn)
+                peerConn.consumeWriteSource.bind(peerConn),
+                conn,
             )
         })        
     }

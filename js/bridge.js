@@ -42,7 +42,8 @@ async function test() {
                 method: "GET",
                 body: ""
             }
-            await pt.roundTrip(req)
+            const resp = await pt.roundTrip(req)
+            console.log(resp)
         }
     }
     pl.onPeerConn = async function(peerConn) {

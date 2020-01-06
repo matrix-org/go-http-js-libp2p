@@ -14,7 +14,7 @@
 // limitations under the License.
 
 import { pull } from "pull-stream"
-import Concat from "pull-concat/string"
+import concat from "pull-stream/sinks/concat"
 
 import PeerInfo from "peer-info"
 import PeerId from "peer-id"
@@ -52,35 +52,40 @@ export default class PeerTransport {
             conn,
         )
 
+        let respResolve
+        const respPromise = new Promise((resolve, reject) => { respResolve = resolve })
+
         let respString
         pull(
             conn,
-            Concat((err, data) => {
+            concat((err, data) => {
                 if (err) throw err
                 respString = data
+                respResolve()
             }),
         )
 
-        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))\r\n(.*)?(\r\n\r\n(.*?))$/)
+        await respPromise
+        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))(\r\n(.*?)?(\r\n\r\n(.*?)))?$/)
         if (!m) {
-            console.fatal("couldn't parse resp", respString)
+            console.warn("couldn't parse resp", respString)
         }
-        const headers = m[5]
+        const headers = m[6]
         const resp = {
             "proto": m[1],
             "status": m[2],
             "statusCode": parseInt(m[3]),
-            "body": m[7],
+            "body": m[8],
         }
 
         /*
         // loopback straight to the peerListener
         const listener = global.peerListener
         if (!listener) {
-            console.fatal("no peerListener!")
+            console.warn("no peerListener!")
         }
         if (!listener.onPeerConn) {
-            console.fatal("no onPeerConn!")
+            console.warn("no onPeerConn!")
         }
 
         const conn = new PeerConn("0.0.0.0", "0.0.0.0")
@@ -96,7 +101,7 @@ export default class PeerTransport {
         console.log("read response", respString)
         const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))\r\n(.*)?(\r\n\r\n(.*?))$/s)
         if (!m) {
-            console.fatal("couldn't parse resp", respString)
+            console.warn("couldn't parse resp", respString)
         }
         const headers = m[5]
         const resp = {

@@ -58,7 +58,8 @@ export default class PeerConn {
     consumeWriteSource(end, cb) {
         if (end) return cb(end)
         if (this.writeBuf.length > 0) {
-            cb(null, this.writeBuf)
+            // FIXME: only return true if the connection is closed and this is the end of the stream
+            cb(true, this.writeBuf)
             this.writeBuf = ''
         }
         else {
@@ -69,10 +70,11 @@ export default class PeerConn {
 
     // pullstream-compatible way to add data into the connection to be read by Go
     fillReadSink(read) {
+        const self = this;
         read(null, function next(end, data) {
             if (end === true) return
             if (end) throw end
-            this.fillRead(data)
+            self.fillRead(data)
             read(null, next)
         })
     }
