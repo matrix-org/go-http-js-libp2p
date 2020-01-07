@@ -23,7 +23,7 @@ import multihashing from "multihashing-async"
 import { promisify } from "es6-promisify"
 const createPeerInfo = promisify(PeerInfo.create);
 
-export default class PeerLocalNode {
+export default class P2pLocalNode {
 
     constructor(service) {
         this.service = service

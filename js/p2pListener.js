@@ -15,36 +15,36 @@
 
 import { pull } from "pull-stream"
 
-import PeerConn from './peerConn.js'
+import P2pConn from './p2pConn.js'
 
 import { promisify } from "es6-promisify"
 
-export default class PeerListener {
+export default class P2pListener {
 
-    constructor(peerLocalNode) {
-        this.peerLocalNode = peerLocalNode
+    constructor(p2pLocalNode) {
+        this.p2pLocalNode = p2pLocalNode
 
-        const node = peerLocalNode.node
+        const node = p2pLocalNode.node
         node.handle('/libp2p-http/1.0.0', async (protocol, conn) => {
             const getPeerInfo = promisify(conn.getPeerInfo.bind(conn))
             const pi = await getPeerInfo()
 
             // create the go-server-facing side of the connection
-            const peerConn = new PeerConn(peerLocalNode.node.idStr, pi.id.toB58String())
-            this.onPeerConn(peerConn)
+            const p2pConn = new P2pConn(p2pLocalNode.node.idStr, pi.id.toB58String())
+            this.onP2pConn(p2pConn)
   
             pull(
                 conn,
-                peerConn.fillReadSink.bind(peerConn),
+                p2pConn.fillReadSink.bind(p2pConn),
             )
 
             pull(
-                peerConn.consumeWriteSource.bind(peerConn),
+                p2pConn.consumeWriteSource.bind(p2pConn),
                 conn,
             )
         })        
     }
 
     // implemented in Go
-    // onPeerConn(peerConn) {}
+    // onP2pConn(p2pConn) {}
 }

@@ -20,43 +20,43 @@ import "log"
 import "time"
 import "syscall/js"
 
-type peerAddr struct {
+type p2pAddr struct {
 	string string
 }
 
-func NewPeerAddr(string string) *peerAddr {
-	return &peerAddr{
+func NewP2pAddr(string string) *p2pAddr {
+	return &p2pAddr{
 		string: string,
 	}
 }
 
-func (pa *peerAddr) String() string {
+func (pa *p2pAddr) String() string {
 	return pa.string
 }
 
-func (pa *peerAddr) Network() string {
+func (pa *p2pAddr) Network() string {
 	return "libp2p"
 }
 
 /////////
 
-type peerConn struct {
+type p2pConn struct {
 	localAddr  net.Addr
 	remoteAddr net.Addr
-	jsPeerConn js.Value
+	jsP2pConn js.Value
 }
 
-func NewPeerConn(jsPeerConn js.Value) *peerConn {
+func NewP2pConn(jsP2pConn js.Value) *p2pConn {
 	// bridge := js.Global().Get("bridge")
 	//
-	// if jsPeerConn == nil {
-	// 	jsPeerConn = bridge.Call("newPeerConn", localAddr.String(), remoteAddr.String())
+	// if jsP2pConn == nil {
+	// 	jsP2pConn = bridge.Call("newP2pConn", localAddr.String(), remoteAddr.String())
 	// }
 
-	pc := &peerConn{
-		localAddr:  NewPeerAddr(jsPeerConn.Get("localAddr").String()),
-		remoteAddr: NewPeerAddr(jsPeerConn.Get("remoteAddr").String()),
-		jsPeerConn: jsPeerConn,
+	pc := &p2pConn{
+		localAddr:  NewP2pAddr(jsP2pConn.Get("localAddr").String()),
+		remoteAddr: NewP2pAddr(jsP2pConn.Get("remoteAddr").String()),
+		jsP2pConn: jsP2pConn,
 	}
 	return pc
 }
@@ -64,13 +64,13 @@ func NewPeerConn(jsPeerConn js.Value) *peerConn {
 // Read reads data from the connection.
 // Read can be made to time out and return an Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
-func (pc peerConn) Read(b []byte) (n int, err error) {
+func (pc p2pConn) Read(b []byte) (n int, err error) {
 	//log.Println("Awaiting read from JS")
-	val, ok := Await(pc.jsPeerConn.Call("read"))
+	val, ok := Await(pc.jsP2pConn.Call("read"))
 	if ok == false {
 		log.Fatal("Failed to read")
 	}
-	//log.Printf("Read from peerConn: %s\n", val.String())
+	//log.Printf("Read from p2pConn: %s\n", val.String())
 	buf := []byte(val.String())
 	c := copy(b, buf)
 	if c < len(buf) {
@@ -82,25 +82,25 @@ func (pc peerConn) Read(b []byte) (n int, err error) {
 // Write writes data to the connection.
 // Write can be made to time out and return an Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetWriteDeadline.
-func (pc peerConn) Write(b []byte) (n int, err error) {
-	//log.Printf("Writing to peerConn: %s\n", string(b))
-	pc.jsPeerConn.Call("write", string(b))
+func (pc p2pConn) Write(b []byte) (n int, err error) {
+	//log.Printf("Writing to p2pConn: %s\n", string(b))
+	pc.jsP2pConn.Call("write", string(b))
 	return len(b), nil
 }
 
 // Close closes the connection.
 // Any blocked Read or Write operations will be unblocked and return errors.
-func (pc peerConn) Close() error {
+func (pc p2pConn) Close() error {
 	return nil
 }
 
 // LocalAddr returns the local network address.
-func (pc peerConn) LocalAddr() net.Addr {
+func (pc p2pConn) LocalAddr() net.Addr {
 	return pc.localAddr
 }
 
 // RemoteAddr returns the remote network address.
-func (pc peerConn) RemoteAddr() net.Addr {
+func (pc p2pConn) RemoteAddr() net.Addr {
 	return pc.remoteAddr
 }
 
@@ -126,14 +126,14 @@ func (pc peerConn) RemoteAddr() net.Addr {
 // also return a timeout error. On Unix systems a keep-alive
 // failure on I/O can be detected using
 // errors.Is(err, syscall.ETIMEDOUT).
-func (pc peerConn) SetDeadline(t time.Time) error {
+func (pc p2pConn) SetDeadline(t time.Time) error {
 	return nil
 }
 
 // SetReadDeadline sets the deadline for future Read calls
 // and any currently-blocked Read call.
 // A zero value for t means Read will not time out.
-func (pc peerConn) SetReadDeadline(t time.Time) error {
+func (pc p2pConn) SetReadDeadline(t time.Time) error {
 	return nil
 }
 
@@ -142,6 +142,6 @@ func (pc peerConn) SetReadDeadline(t time.Time) error {
 // Even if write times out, it may return n > 0, indicating that
 // some of the data was successfully written.
 // A zero value for t means Write will not time out.
-func (pc peerConn) SetWriteDeadline(t time.Time) error {
+func (pc p2pConn) SetWriteDeadline(t time.Time) error {
 	return nil
 }

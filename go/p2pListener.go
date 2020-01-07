@@ -18,35 +18,35 @@ package main
 import "net"
 import "syscall/js"
 
-type peerListener struct {
-	jsPeerListener js.Value
-	newConn        chan peerConn
-	peerLocalNode  *peerLocalNode
+type p2pListener struct {
+	jsP2pListener js.Value
+	newConn        chan p2pConn
+	p2pLocalNode  *p2pLocalNode
 }
 
-func NewPeerListener(peerLocalNode *peerLocalNode) *peerListener {
+func NewP2pListener(p2pLocalNode *p2pLocalNode) *p2pListener {
 	bridge := js.Global().Get("bridge")
 
-	pl := &peerListener{
-		jsPeerListener: bridge.Call("newPeerListener", peerLocalNode.Js()),
-		newConn:        make(chan peerConn),
-		peerLocalNode:	peerLocalNode,
+	pl := &p2pListener{
+		jsP2pListener: bridge.Call("newP2pListener", p2pLocalNode.Js()),
+		newConn:        make(chan p2pConn),
+		p2pLocalNode:	p2pLocalNode,
 	}
 
-	pl.jsPeerListener.Set("onPeerConn", js.FuncOf(pl.onPeerConn))
+	pl.jsP2pListener.Set("onP2pConn", js.FuncOf(pl.onP2pConn))
 
 	return pl
 }
 
-func (pl *peerListener) onPeerConn(this js.Value, inputs []js.Value) interface{} {
+func (pl *p2pListener) onP2pConn(this js.Value, inputs []js.Value) interface{} {
 	jsConn := inputs[0]
-	conn := NewPeerConn(jsConn)
+	conn := NewP2pConn(jsConn)
 	pl.newConn <- *conn
 	return nil
 }
 
 // Accept waits for and returns the next connection to the listener.
-func (pl *peerListener) Accept() (net.Conn, error) {
+func (pl *p2pListener) Accept() (net.Conn, error) {
 	// block until we get told by JS about a new connection
 	conn := <-pl.newConn
 	return conn, nil
@@ -54,11 +54,11 @@ func (pl *peerListener) Accept() (net.Conn, error) {
 
 // Close closes the listener.
 // Any blocked Accept operations will be unblocked and return errors.
-func (pl *peerListener) Close() error {
+func (pl *p2pListener) Close() error {
 	return nil
 }
 
 // Addr returns the listener's network address.
-func (pl *peerListener) Addr() net.Addr {
+func (pl *p2pListener) Addr() net.Addr {
 	return nil
 }

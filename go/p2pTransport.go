@@ -22,21 +22,21 @@ import "strings"
 import "net/http"
 import "syscall/js"
 
-type peerTransport struct {
-	peerLocalNode *peerLocalNode
-	jsPeerTransport js.Value
+type p2pTransport struct {
+	p2pLocalNode *p2pLocalNode
+	jsP2pTransport js.Value
 }
 
-func NewPeerTransport(peerLocalNode *peerLocalNode) *peerTransport {
+func NewP2pTransport(p2pLocalNode *p2pLocalNode) *p2pTransport {
 	bridge := js.Global().Get("bridge")
-	pt := &peerTransport{
-		peerLocalNode: peerLocalNode,
-		jsPeerTransport: bridge.Call("newPeerTransport", peerLocalNode.Js()),
+	pt := &p2pTransport{
+		p2pLocalNode: p2pLocalNode,
+		jsP2pTransport: bridge.Call("newP2pTransport", p2pLocalNode.Js()),
 	}
 	return pt
 }
 
-func (pt *peerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	// FIXME: support with streaming req bodies
 	var body string
@@ -57,7 +57,7 @@ func (pt *peerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		"body": body,
 	})
 
-	jsResponse, ok := Await(pt.jsPeerTransport.Call("roundTrip", jsReq))
+	jsResponse, ok := Await(pt.jsP2pTransport.Call("roundTrip", jsReq))
 
 	log.Printf("jsResponse is %+v, ok is %+v\n", jsResponse.Get("status"), ok)
 

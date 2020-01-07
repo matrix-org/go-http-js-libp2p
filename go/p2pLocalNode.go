@@ -18,8 +18,8 @@ package main
 import "syscall/js"
 import "log"
 
-type peerLocalNode struct {
-	jsPeerLocalNode js.Value
+type p2pLocalNode struct {
+	jsP2pLocalNode js.Value
 	Service string
 
 	// peers []peerInfo
@@ -29,37 +29,37 @@ type peerLocalNode struct {
 	handleFoundProvider func(*peerInfo)
 }
 
-func NewPeerLocalNode(service string) *peerLocalNode {
+func NewP2pLocalNode(service string) *p2pLocalNode {
 	bridge := js.Global().Get("bridge")
 
-	jsPeerLocalNode, ok := Await(bridge.Call("newPeerLocalNode", service))
+	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service))
 	if !ok {
-		log.Fatal("couldn't create newPeerLocalNode")
+		log.Fatal("couldn't create newP2pLocalNode")
 	}
 
-	pn := &peerLocalNode{
-		jsPeerLocalNode: jsPeerLocalNode,
+	pn := &p2pLocalNode{
+		jsP2pLocalNode: jsP2pLocalNode,
 		Service: service,
 	}
 
 	// set up js->go callbacks
-	pn.jsPeerLocalNode.Set("onPeerDiscover", js.FuncOf(pn.onPeerDiscover))
-	pn.jsPeerLocalNode.Set("onPeerConnect", js.FuncOf(pn.onPeerConnect))
-	pn.jsPeerLocalNode.Set("onPeerDisconnect", js.FuncOf(pn.onPeerDisconnect))
-	pn.jsPeerLocalNode.Set("onFoundProvider", js.FuncOf(pn.onFoundProvider))
+	pn.jsP2pLocalNode.Set("onPeerDiscover", js.FuncOf(pn.onPeerDiscover))
+	pn.jsP2pLocalNode.Set("onPeerConnect", js.FuncOf(pn.onPeerConnect))
+	pn.jsP2pLocalNode.Set("onPeerDisconnect", js.FuncOf(pn.onPeerDisconnect))
+	pn.jsP2pLocalNode.Set("onFoundProvider", js.FuncOf(pn.onFoundProvider))
 
 	return pn
 }
 
-func (pn *peerLocalNode) Js() js.Value {
-	return pn.jsPeerLocalNode
+func (pn *p2pLocalNode) Js() js.Value {
+	return pn.jsP2pLocalNode
 }
 
-// func (pn *peerLocalNode) GetPeers() []peerInfo {
+// func (pn *p2pLocalNode) GetPeers() []peerInfo {
 // 	return pn.peers
 // }
 
-func (pn *peerLocalNode) onPeerDiscover(this js.Value, inputs []js.Value) interface{} {
+func (pn *p2pLocalNode) onPeerDiscover(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	// pn.peers = append(pn.peers, pi)
 	if pn.handlePeerDiscover != nil {
@@ -68,7 +68,7 @@ func (pn *peerLocalNode) onPeerDiscover(this js.Value, inputs []js.Value) interf
 	return nil
 }
 
-func (pn *peerLocalNode) onPeerConnect(this js.Value, inputs []js.Value) interface{} {
+func (pn *p2pLocalNode) onPeerConnect(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	if pn.handlePeerConnect != nil {
 		pn.handlePeerConnect(pi)
@@ -76,7 +76,7 @@ func (pn *peerLocalNode) onPeerConnect(this js.Value, inputs []js.Value) interfa
 	return nil
 }
 
-func (pn *peerLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) interface{} {
+func (pn *p2pLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	if pn.handlePeerDisconnect != nil {
 		pn.handlePeerDisconnect(pi)
@@ -84,7 +84,7 @@ func (pn *peerLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) inte
 	return nil
 }
 
-func (pn *peerLocalNode) onFoundProvider(this js.Value, inputs []js.Value) interface{} {
+func (pn *p2pLocalNode) onFoundProvider(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	if pn.handleFoundProvider != nil {
 		pn.handleFoundProvider(pi)
@@ -92,18 +92,18 @@ func (pn *peerLocalNode) onFoundProvider(this js.Value, inputs []js.Value) inter
 	return nil
 }
 
-func (pn *peerLocalNode) registerPeerDiscover(handler func(*peerInfo)) {
+func (pn *p2pLocalNode) registerPeerDiscover(handler func(*peerInfo)) {
 	pn.handlePeerDiscover = handler
 }
 
-func (pn *peerLocalNode) registerPeerConnect(handler func(*peerInfo)) {
+func (pn *p2pLocalNode) registerPeerConnect(handler func(*peerInfo)) {
 	pn.handlePeerConnect = handler
 }
 
-func (pn *peerLocalNode) registerPeerDisconnect(handler func(*peerInfo)) {
+func (pn *p2pLocalNode) registerPeerDisconnect(handler func(*peerInfo)) {
 	pn.handlePeerDisconnect = handler
 }
 
-func (pn *peerLocalNode) registerFoundProvider(handler func(*peerInfo)) {
+func (pn *p2pLocalNode) registerFoundProvider(handler func(*peerInfo)) {
 	pn.handleFoundProvider = handler
 }

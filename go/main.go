@@ -27,13 +27,13 @@ func init() {
 }
 
 func main() {
-	node := NewPeerLocalNode("org.matrix.p2p.experiment")
+	node := NewP2pLocalNode("org.matrix.p2p.experiment")
 	server(node)
 
 	// due to https://github.com/golang/go/issues/27495 we can't override the DialContext
 	// instead we have to provide a whole custom transport.
 	client := &http.Client{
-		Transport: NewPeerTransport(node),
+		Transport: NewP2pTransport(node),
 	}
 
 	// try to ping every peer that we discover which supports this service
@@ -60,14 +60,14 @@ func main() {
 	<-c
 }
 
-func server(node *peerLocalNode) {
+func server(node *p2pLocalNode) {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "pong")
 	})
 
 	log.Println("starting server")
 
-	listener := NewPeerListener(node)
+	listener := NewP2pListener(node)
 	s := &http.Server{}
 	go s.Serve(listener)
 }

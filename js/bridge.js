@@ -13,33 +13,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import PeerListener from './peerListener.js'
-import PeerLocalNode from './peerLocalNode.js'
-import PeerTransport from './peerTransport.js'
+import P2pListener from './p2pListener.js'
+import P2pLocalNode from './p2pLocalNode.js'
+import P2pTransport from './p2pTransport.js'
 
 global.bridge = {
-    newPeerLocalNode: async (service) => {
-        const peerLocalNode = new PeerLocalNode(service)
-        await peerLocalNode.init()
-        return peerLocalNode
+    newP2pLocalNode: async (service) => {
+        const p2pLocalNode = new P2pLocalNode(service)
+        await p2pLocalNode.init()
+        return p2pLocalNode
     },
-    newPeerTransport: (peerLocalNode) => {
-        return new PeerTransport(peerLocalNode)
+    newP2pTransport: (p2pLocalNode) => {
+        return new P2pTransport(p2pLocalNode)
     },
-    newPeerListener: (peerLocalNode) => {
-        return new PeerListener(peerLocalNode)
+    newP2pListener: (p2pLocalNode) => {
+        return new P2pListener(p2pLocalNode)
     },
 }
 
 /*
 async function test() {
-    const pln = await bridge.newPeerLocalNode("matrix")
-    const pt = bridge.newPeerTransport(pln)
-    const pl = bridge.newPeerListener(pln)
+    const pln = await bridge.newP2pLocalNode("matrix")
+    const pt = bridge.newP2pTransport(pln)
+    const pl = bridge.newP2pListener(pln)
     pln.onFoundProvider = async function(pi) {
         if (location.hash != '#server') {
             const req = {
-                url: "libp2p-http-rpc://" + pi.id.toB58String() + "/ping",
+                url: "libp2p-http://" + pi.id.toB58String() + "/ping",
                 method: "GET",
                 body: ""
             }
@@ -47,9 +47,9 @@ async function test() {
             console.log(resp)
         }
     }
-    pl.onPeerConn = async function(peerConn) {
-        console.log("reading from peerConn:", await peerConn.read())
-        peerConn.write("HTTP/1.0 200 OK")
+    pl.onP2pConn = async function(p2pConn) {
+        console.log("reading from p2pConn:", await p2pConn.read())
+        p2pConn.write("HTTP/1.0 200 OK")
     }
 }
 test();

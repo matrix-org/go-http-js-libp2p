@@ -22,10 +22,10 @@ import PeerId from "peer-id"
 import { promisify } from "es6-promisify"
 
 
-export default class PeerTransport {
+export default class P2pTransport {
 
-    constructor(peerLocalNode) {
-        this.peerLocalNode = peerLocalNode
+    constructor(p2pLocalNode) {
+        this.p2pLocalNode = p2pLocalNode
     }
 
     async roundTrip(req) {
@@ -39,7 +39,7 @@ export default class PeerTransport {
         const destPeerInfo = new PeerInfo(destPeerId)
 
         // dial out over libp2p
-        const node = this.peerLocalNode.node
+        const node = this.p2pLocalNode.node
         const dial = promisify(node.dialProtocol)
         const conn = await dial(destPeerInfo, '/libp2p-http/1.0.0')
 
@@ -79,17 +79,17 @@ export default class PeerTransport {
         }
 
         /*
-        // loopback straight to the peerListener
-        const listener = global.peerListener
+        // loopback straight to the p2pListener
+        const listener = global.p2pListener
         if (!listener) {
-            console.warn("no peerListener!")
+            console.warn("no p2pListener!")
         }
-        if (!listener.onPeerConn) {
-            console.warn("no onPeerConn!")
+        if (!listener.onP2pConn) {
+            console.warn("no onP2pConn!")
         }
 
-        const conn = new PeerConn("0.0.0.0", "0.0.0.0")
-        listener.onPeerConn(conn)
+        const conn = new P2pConn("0.0.0.0", "0.0.0.0")
+        listener.onP2pConn(conn)
 
         const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
         console.log("trying to send request", reqString)
