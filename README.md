@@ -1,7 +1,7 @@
-### libp2p-http-rpc
+### js-libp2p-go-http
 
-A rewrite of the experiment from 2019 Web3 Summit (original lost by hardware failure)
-for tunnelling HTTP requests/responses in-browser from go-wasm over js-libp2p.
+Tunnel HTTP requests/responses in-browser from go-wasm over js-libp2p.
+In theory should be compatible with https://github.com/libp2p/go-libp2p-http
 
 To run:
 

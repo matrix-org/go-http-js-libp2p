@@ -25,7 +25,7 @@ export default class PeerListener {
         this.peerLocalNode = peerLocalNode
 
         const node = peerLocalNode.node
-        node.handle('/libp2p-http-rpc/1.0.0', async (protocol, conn) => {
+        node.handle('/libp2p-http/1.0.0', async (protocol, conn) => {
             const getPeerInfo = promisify(conn.getPeerInfo.bind(conn))
             const pi = await getPeerInfo()
 

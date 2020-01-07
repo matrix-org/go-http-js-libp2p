@@ -34,14 +34,14 @@ export default class PeerTransport {
         // figure out what address we're connecting to
         // we can't use the url npm module, as it lowercases the host
         // we can't use the browser's Url module, as it doesn't parse hosts for unknown URI schemes
-        const host = (req.url.match(/^libp2p-http-rpc:\/\/(.*?)\//))[1]
+        const host = (req.url.match(/^libp2p-http:\/\/(.*?)\//))[1]
         const destPeerId = PeerId.createFromB58String(host)
         const destPeerInfo = new PeerInfo(destPeerId)
 
         // dial out over libp2p
         const node = this.peerLocalNode.node
         const dial = promisify(node.dialProtocol)
-        const conn = await dial(destPeerInfo, '/libp2p-http-rpc/1.0.0')
+        const conn = await dial(destPeerInfo, '/libp2p-http/1.0.0')
 
         // the world's dumbest HTTP client.
         // it would be much better to hook up go's HTTP client (and then we'd get HTTP/2 etc)

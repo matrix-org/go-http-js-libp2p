@@ -39,8 +39,8 @@ func main() {
 	// try to ping every peer that we discover which supports this service
 	node.registerFoundProvider(func(pi *peerInfo) {
 		go func() {
-			log.Printf("Trying to GET libp2p-http-rpc://%s/ping", pi.Id)
-			resp, err := client.Get(fmt.Sprintf("libp2p-http-rpc://%s/ping", pi.Id))
+			log.Printf("Trying to GET libp2p-http://%s/ping", pi.Id)
+			resp, err := client.Get(fmt.Sprintf("libp2p-http://%s/ping", pi.Id))
 			if err != nil {
 				log.Fatal("Can't make request")
 			}

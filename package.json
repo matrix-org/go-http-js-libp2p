@@ -1,5 +1,5 @@
 {
-  "name": "libp2p-http-rpc",
+  "name": "js-libp2p-go-http",
   "version": "0.1.0",
   "description": "HTTP over js-libp2p from go-wasm",
   "main": "js/index.js",
