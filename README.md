@@ -1,4 +1,4 @@
-### js-libp2p-go-http
+### go-http-js-libp2p
 
 Tunnel HTTP requests/responses in-browser from go-wasm over js-libp2p.
 In theory should be compatible with https://github.com/libp2p/go-libp2p-http

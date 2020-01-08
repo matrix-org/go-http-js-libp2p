@@ -3,3 +3,4 @@ TODO:
 * implement headers
 * make bodies stream
 * run it in a service worker that intercepts HTTP hits from the main client, and sends them via libp2p to another peer rather than to a server.
+* turn the test jig into proper unit tests (both for go<->js loopback and then js<->js loopback)
