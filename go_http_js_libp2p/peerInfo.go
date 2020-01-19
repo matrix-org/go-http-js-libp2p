@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package go_http_js_libp2p
 
 import "syscall/js"
 
-type peerInfo struct {
+type PeerInfo struct {
 	jsPeerInfo js.Value
 	Id string
 }
 
-func NewPeerInfo(jsPeerInfo js.Value) *peerInfo {
-	pi := &peerInfo{
+func NewPeerInfo(jsPeerInfo js.Value) *PeerInfo {
+	pi := &PeerInfo{
 		jsPeerInfo: jsPeerInfo,
 		Id: jsPeerInfo.Get("id").Call("toB58String").String(),
 	}

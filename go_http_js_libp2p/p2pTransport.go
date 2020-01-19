@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package go_http_js_libp2p
 
 import "io"
 import "io/ioutil"
@@ -23,11 +23,11 @@ import "net/http"
 import "syscall/js"
 
 type p2pTransport struct {
-	p2pLocalNode *p2pLocalNode
+	p2pLocalNode *P2pLocalNode
 	jsP2pTransport js.Value
 }
 
-func NewP2pTransport(p2pLocalNode *p2pLocalNode) *p2pTransport {
+func NewP2pTransport(p2pLocalNode *P2pLocalNode) *p2pTransport {
 	bridge := js.Global().Get("bridge")
 	pt := &p2pTransport{
 		p2pLocalNode: p2pLocalNode,

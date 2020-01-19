@@ -13,23 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package go_http_js_libp2p
 
 import "syscall/js"
 import "log"
 
-type p2pLocalNode struct {
+type P2pLocalNode struct {
 	jsP2pLocalNode js.Value
 	Service string
 
-	// peers []peerInfo
-	handlePeerDiscover func(*peerInfo)
-	handlePeerConnect func(*peerInfo)
-	handlePeerDisconnect func(*peerInfo)
-	handleFoundProvider func(*peerInfo)
+	// peers []PeerInfo
+	handlePeerDiscover func(*PeerInfo)
+	handlePeerConnect func(*PeerInfo)
+	handlePeerDisconnect func(*PeerInfo)
+	handleFoundProvider func(*PeerInfo)
 }
 
-func NewP2pLocalNode(service string) *p2pLocalNode {
+func NewP2pLocalNode(service string) *P2pLocalNode {
 	bridge := js.Global().Get("bridge")
 
 	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service))
@@ -37,7 +37,7 @@ func NewP2pLocalNode(service string) *p2pLocalNode {
 		log.Fatal("couldn't create newP2pLocalNode")
 	}
 
-	pn := &p2pLocalNode{
+	pn := &P2pLocalNode{
 		jsP2pLocalNode: jsP2pLocalNode,
 		Service: service,
 	}
@@ -51,15 +51,15 @@ func NewP2pLocalNode(service string) *p2pLocalNode {
 	return pn
 }
 
-func (pn *p2pLocalNode) Js() js.Value {
+func (pn *P2pLocalNode) Js() js.Value {
 	return pn.jsP2pLocalNode
 }
 
-// func (pn *p2pLocalNode) GetPeers() []peerInfo {
+// func (pn *p2pLocalNode) GetPeers() []PeerInfo {
 // 	return pn.peers
 // }
 
-func (pn *p2pLocalNode) onPeerDiscover(this js.Value, inputs []js.Value) interface{} {
+func (pn *P2pLocalNode) onPeerDiscover(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	// pn.peers = append(pn.peers, pi)
 	if pn.handlePeerDiscover != nil {
@@ -68,7 +68,7 @@ func (pn *p2pLocalNode) onPeerDiscover(this js.Value, inputs []js.Value) interfa
 	return nil
 }
 
-func (pn *p2pLocalNode) onPeerConnect(this js.Value, inputs []js.Value) interface{} {
+func (pn *P2pLocalNode) onPeerConnect(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	if pn.handlePeerConnect != nil {
 		pn.handlePeerConnect(pi)
@@ -76,7 +76,7 @@ func (pn *p2pLocalNode) onPeerConnect(this js.Value, inputs []js.Value) interfac
 	return nil
 }
 
-func (pn *p2pLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) interface{} {
+func (pn *P2pLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	if pn.handlePeerDisconnect != nil {
 		pn.handlePeerDisconnect(pi)
@@ -84,7 +84,7 @@ func (pn *p2pLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) inter
 	return nil
 }
 
-func (pn *p2pLocalNode) onFoundProvider(this js.Value, inputs []js.Value) interface{} {
+func (pn *P2pLocalNode) onFoundProvider(this js.Value, inputs []js.Value) interface{} {
 	pi := NewPeerInfo(inputs[0])
 	if pn.handleFoundProvider != nil {
 		pn.handleFoundProvider(pi)
@@ -92,18 +92,18 @@ func (pn *p2pLocalNode) onFoundProvider(this js.Value, inputs []js.Value) interf
 	return nil
 }
 
-func (pn *p2pLocalNode) registerPeerDiscover(handler func(*peerInfo)) {
+func (pn *P2pLocalNode) RegisterPeerDiscover(handler func(*PeerInfo)) {
 	pn.handlePeerDiscover = handler
 }
 
-func (pn *p2pLocalNode) registerPeerConnect(handler func(*peerInfo)) {
+func (pn *P2pLocalNode) RegisterPeerConnect(handler func(*PeerInfo)) {
 	pn.handlePeerConnect = handler
 }
 
-func (pn *p2pLocalNode) registerPeerDisconnect(handler func(*peerInfo)) {
+func (pn *P2pLocalNode) RegisterPeerDisconnect(handler func(*PeerInfo)) {
 	pn.handlePeerDisconnect = handler
 }
 
-func (pn *p2pLocalNode) registerFoundProvider(handler func(*peerInfo)) {
+func (pn *P2pLocalNode) RegisterFoundProvider(handler func(*PeerInfo)) {
 	pn.handleFoundProvider = handler
 }

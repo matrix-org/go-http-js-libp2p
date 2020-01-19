@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package go_http_js_libp2p
 
 import "net"
 import "syscall/js"
@@ -21,10 +21,10 @@ import "syscall/js"
 type p2pListener struct {
 	jsP2pListener js.Value
 	newConn        chan p2pConn
-	p2pLocalNode  *p2pLocalNode
+	p2pLocalNode  *P2pLocalNode
 }
 
-func NewP2pListener(p2pLocalNode *p2pLocalNode) *p2pListener {
+func NewP2pListener(p2pLocalNode *P2pLocalNode) *p2pListener {
 	bridge := js.Global().Get("bridge")
 
 	pl := &p2pListener{

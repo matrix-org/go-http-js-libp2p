@@ -19,6 +19,7 @@ import "fmt"
 import "log"
 import "io/ioutil"
 import "net/http"
+import "github.com/matrix-org/go-http-js-libp2p/go_http_js_libp2p"
 
 var c chan struct{}
 
@@ -27,17 +28,17 @@ func init() {
 }
 
 func main() {
-	node := NewP2pLocalNode("org.matrix.p2p.experiment")
+	node := go_http_js_libp2p.NewP2pLocalNode("org.matrix.p2p.experiment")
 	server(node)
 
 	// due to https://github.com/golang/go/issues/27495 we can't override the DialContext
 	// instead we have to provide a whole custom transport.
 	client := &http.Client{
-		Transport: NewP2pTransport(node),
+		Transport: go_http_js_libp2p.NewP2pTransport(node),
 	}
 
 	// try to ping every peer that we discover which supports this service
-	node.registerFoundProvider(func(pi *peerInfo) {
+	node.RegisterFoundProvider(func(pi *go_http_js_libp2p.PeerInfo) {
 		go func() {
 			log.Printf("Trying to GET libp2p-http://%s/ping", pi.Id)
 			resp, err := client.Get(fmt.Sprintf("libp2p-http://%s/ping", pi.Id))
@@ -60,14 +61,14 @@ func main() {
 	<-c
 }
 
-func server(node *p2pLocalNode) {
+func server(node *go_http_js_libp2p.P2pLocalNode) {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "pong")
 	})
 
 	log.Println("starting server")
 
-	listener := NewP2pListener(node)
+	listener := go_http_js_libp2p.NewP2pListener(node)
 	s := &http.Server{}
 	go s.Serve(listener)
 }
