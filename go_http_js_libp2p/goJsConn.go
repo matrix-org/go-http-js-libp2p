@@ -13,50 +13,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package go_http_js_libp2p
+package go_http_js_libgoJs
 
 import "net"
 import "log"
 import "time"
 import "syscall/js"
 
-type p2pAddr struct {
+type goJsAddr struct {
 	string string
 }
 
-func NewP2pAddr(string string) *p2pAddr {
-	return &p2pAddr{
+func NewGoJsAddr(string string) *goJsAddr {
+	return &goJsAddr{
 		string: string,
 	}
 }
 
-func (pa *p2pAddr) String() string {
+func (pa *goJsAddr) String() string {
 	return pa.string
 }
 
-func (pa *p2pAddr) Network() string {
-	return "libp2p"
+func (pa *goJsAddr) Network() string {
+	return "gojs"
 }
 
 /////////
 
-type p2pConn struct {
+type goJsConn struct {
 	localAddr  net.Addr
 	remoteAddr net.Addr
-	jsP2pConn js.Value
+	jsGoJsConn js.Value
 }
 
-func NewP2pConn(jsP2pConn js.Value) *p2pConn {
+func NewGoJsConn(jsGoJsConn js.Value) *goJsConn {
 	// bridge := js.Global().Get("bridge")
 	//
-	// if jsP2pConn == nil {
-	// 	jsP2pConn = bridge.Call("newP2pConn", localAddr.String(), remoteAddr.String())
+	// if jsGoJsConn == nil {
+	// 	jsGoJsConn = bridge.Call("newGoJsConn", localAddr.String(), remoteAddr.String())
 	// }
 
-	pc := &p2pConn{
-		localAddr:  NewP2pAddr(jsP2pConn.Get("localAddr").String()),
-		remoteAddr: NewP2pAddr(jsP2pConn.Get("remoteAddr").String()),
-		jsP2pConn: jsP2pConn,
+	pc := &goJsConn{
+		localAddr:  NewGoJsAddr(jsGoJsConn.Get("localAddr").String()),
+		remoteAddr: NewGoJsAddr(jsGoJsConn.Get("remoteAddr").String()),
+		jsGoJsConn: jsGoJsConn,
 	}
 	return pc
 }
@@ -64,13 +64,13 @@ func NewP2pConn(jsP2pConn js.Value) *p2pConn {
 // Read reads data from the connection.
 // Read can be made to time out and return an Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
-func (pc p2pConn) Read(b []byte) (n int, err error) {
+func (pc goJsConn) Read(b []byte) (n int, err error) {
 	//log.Println("Awaiting read from JS")
-	val, ok := Await(pc.jsP2pConn.Call("read"))
+	val, ok := Await(pc.jsGoJsConn.Call("read"))
 	if ok == false {
 		log.Fatal("Failed to read")
 	}
-	//log.Printf("Read from p2pConn: %s\n", val.String())
+	//log.Printf("Read from goJsConn: %s\n", val.String())
 	buf := []byte(val.String())
 	c := copy(b, buf)
 	if c < len(buf) {
@@ -82,25 +82,25 @@ func (pc p2pConn) Read(b []byte) (n int, err error) {
 // Write writes data to the connection.
 // Write can be made to time out and return an Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetWriteDeadline.
-func (pc p2pConn) Write(b []byte) (n int, err error) {
-	//log.Printf("Writing to p2pConn: %s\n", string(b))
-	pc.jsP2pConn.Call("write", string(b))
+func (pc goJsConn) Write(b []byte) (n int, err error) {
+	//log.Printf("Writing to goJsConn: %s\n", string(b))
+	pc.jsGoJsConn.Call("write", string(b))
 	return len(b), nil
 }
 
 // Close closes the connection.
 // Any blocked Read or Write operations will be unblocked and return errors.
-func (pc p2pConn) Close() error {
+func (pc goJsConn) Close() error {
 	return nil
 }
 
 // LocalAddr returns the local network address.
-func (pc p2pConn) LocalAddr() net.Addr {
+func (pc goJsConn) LocalAddr() net.Addr {
 	return pc.localAddr
 }
 
 // RemoteAddr returns the remote network address.
-func (pc p2pConn) RemoteAddr() net.Addr {
+func (pc goJsConn) RemoteAddr() net.Addr {
 	return pc.remoteAddr
 }
 
@@ -126,14 +126,14 @@ func (pc p2pConn) RemoteAddr() net.Addr {
 // also return a timeout error. On Unix systems a keep-alive
 // failure on I/O can be detected using
 // errors.Is(err, syscall.ETIMEDOUT).
-func (pc p2pConn) SetDeadline(t time.Time) error {
+func (pc goJsConn) SetDeadline(t time.Time) error {
 	return nil
 }
 
 // SetReadDeadline sets the deadline for future Read calls
 // and any currently-blocked Read call.
 // A zero value for t means Read will not time out.
-func (pc p2pConn) SetReadDeadline(t time.Time) error {
+func (pc goJsConn) SetReadDeadline(t time.Time) error {
 	return nil
 }
 
@@ -142,6 +142,6 @@ func (pc p2pConn) SetReadDeadline(t time.Time) error {
 // Even if write times out, it may return n > 0, indicating that
 // some of the data was successfully written.
 // A zero value for t means Write will not time out.
-func (pc p2pConn) SetWriteDeadline(t time.Time) error {
+func (pc goJsConn) SetWriteDeadline(t time.Time) error {
 	return nil
 }

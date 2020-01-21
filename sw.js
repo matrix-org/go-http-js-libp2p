@@ -13,9 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+self.importScripts("wasm_exec.js", "dist/bundle.js")
 
+self.addEventListener('install', function(event) {
+    console.log("installing SW")
+})
 
-const go = new Go();
+self.addEventListener('activate', function(event) {
+    console.log("SW activated")
+
+    const go = new Go();
     WebAssembly.instantiateStreaming(fetch("main-sw-test.wasm"), go.importObject).then((result) => {
-    go.run(result.instance);
-});
+        go.run(result.instance)
+    })
+})
+
+// we assume we already have a SW hanging around and we're running within it
+self.addEventListener('fetch', function(event) {
+    console.log("intercepted " + event.request.url)
+    if (event.request.url.match(/\/_matrix/)) {
+        if (global.fetchListener) {
+            // event.respondWith(new Promise((resolve, reject)=>{
+            //     resolve(global.fetchListener.onFetch.bind(event))
+            // }))
+            event.respondWith(global.fetchListener.onFetch(event))
+        }
+        else {
+            console.log("no fetch listener present for " + event.request.url)
+        }
+    }
+    else {
+        return fetch(event.request)
+    }
+})

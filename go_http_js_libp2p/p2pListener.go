@@ -20,7 +20,7 @@ import "syscall/js"
 
 type p2pListener struct {
 	jsP2pListener js.Value
-	newConn        chan p2pConn
+	newConn        chan goJsConn
 	p2pLocalNode  *P2pLocalNode
 }
 
@@ -29,18 +29,18 @@ func NewP2pListener(p2pLocalNode *P2pLocalNode) *p2pListener {
 
 	pl := &p2pListener{
 		jsP2pListener: bridge.Call("newP2pListener", p2pLocalNode.Js()),
-		newConn:        make(chan p2pConn),
+		newConn:        make(chan goJsConn),
 		p2pLocalNode:	p2pLocalNode,
 	}
 
-	pl.jsP2pListener.Set("onP2pConn", js.FuncOf(pl.onP2pConn))
+	pl.jsP2pListener.Set("onGoJsConn", js.FuncOf(pl.onGoJsConn))
 
 	return pl
 }
 
-func (pl *p2pListener) onP2pConn(this js.Value, inputs []js.Value) interface{} {
+func (pl *p2pListener) onGoJsConn(this js.Value, inputs []js.Value) interface{} {
 	jsConn := inputs[0]
-	conn := NewP2pConn(jsConn)
+	conn := NewGoJsConn(jsConn)
 	pl.newConn <- *conn
 	return nil
 }

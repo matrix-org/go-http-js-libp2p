@@ -17,7 +17,6 @@ package main
 
 import "fmt"
 import "log"
-import "io/ioutil"
 import "net/http"
 import "github.com/matrix-org/go-http-js-libp2p/go_http_js_libp2p"
 
@@ -34,7 +33,7 @@ func main() {
 }
 
 func server() {
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/_matrix/ping", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "pong")
 	})
 

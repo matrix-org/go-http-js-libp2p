@@ -15,10 +15,10 @@
 
 // An pipe which has a go net.Conn implementation on one end
 // and a JS pull-stream implementation on the other.
-export default class P2pConn {
+export default class GoJsConn {
 
     constructor(localAddr, remoteAddr) {
-        console.log("created P2pConn", localAddr, remoteAddr)
+        console.log("created GoJsConn", localAddr, remoteAddr)
         this.localAddr = localAddr
         this.remoteAddr = remoteAddr
 

@@ -13,65 +13,62 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import P2pConn from './p2pConn.js'
+import GoJsConn from './p2pConn.js'
 
 import { promisify } from "es6-promisify"
-
-import { pull } from "pull-stream"
 
 export default class FetchListener {
 
     constructor() {
-
-        // we assume we already have a SW hanging around and we're running within it
-        self.addEventListener('fetch', function(event) {
-            event.respondWith(()=>{
-                // create the go-server-facing side of the connection
-                const p2pConn = new P2pConn("localhost", "localhost")
-                this.onP2pConn(p2pConn)
-
-                const reqStream = event.request.body
-                const reqReader = reqStream.getReader()
-
-                // wire the reqStream to the p2pConn's readSink
-                reqStream.pipeTo(new WriteableStream({
-                    write(chunk) {
-                        return new Promise((resolve, reject) => {
-                            p2pConn.fillRead(chunk)
-                            resolve()
-                        })
-                    },
-                    close() {
-                        console.log("trying to close request reader")
-                        // FIXME: hook up close
-                    },
-                    abort() {
-                        console.log("request reader aborted")
-                    }
-                })).then(()=>{
-                    console.log("finished piping request to go")
-                })
-
-                // wire the respStream to the p2pConn's writeSource
-                const respStream = new ReadableStream({
-                    pull(controller) {
-                        p2pConn.consumeWriteSource(null, (chunk)=>{
-                            controller.enqueue(chunk)
-                        })
-                    },
-                    cancel(controller) {
-                        p2pConn.consumeWriteSource(true)
-                    }
-                }
-
-                const resp = new Response(respStream, {
-                    status: 200,
-                })
-
-            });
-        });
     }
 
+    onFetch(event) {
+        // create the go-server-facing side of the connection
+        const p2pConn = new GoJsConn("localhost", "localhost")
+        this.onGoJsConn(p2pConn)
+
+        const reqStream = event.request.body
+        const reqReader = reqStream.getReader()
+
+        // wire the reqStream to the p2pConn's readSink
+        reqStream.pipeTo(new WriteableStream({
+            write(chunk) {
+                return new Promise((resolve, reject) => {
+                    p2pConn.fillRead(chunk)
+                    resolve()
+                })
+            },
+            close() {
+                console.log("trying to close request reader")
+                // FIXME: hook up close
+            },
+            abort() {
+                console.log("request reader aborted")
+            }
+        })).then(()=>{
+            console.log("finished piping request to go")
+        })
+
+        // wire the respStream to the p2pConn's writeSource
+        const respStream = new ReadableStream({
+            pull(controller) {
+                p2pConn.consumeWriteSource(null, (chunk)=>{
+                    controller.enqueue(chunk)
+                })
+            },
+            cancel(controller) {
+                p2pConn.consumeWriteSource(true)
+            }
+        })
+
+        const resp = new Response(respStream, {
+            status: 200,
+        })
+
+        return resp
+    }
+
+
     // implemented in Go
-    // onP2pConn(p2pConn) {}
+    // onGoJsConn(p2pConn) {}
 }

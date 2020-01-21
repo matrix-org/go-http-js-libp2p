@@ -27,7 +27,7 @@ import "syscall/js"
 
 type fetchListener struct {
 	jsFetchListener js.Value
-	newConn        chan p2pConn
+	newConn        chan goJsConn
 }
 
 func NewFetchListener() *fetchListener {
@@ -35,17 +35,17 @@ func NewFetchListener() *fetchListener {
 
 	fl := &fetchListener{
 		jsFetchListener: bridge.Call("newFetchListener"),
-		newConn:        make(chan p2pConn),
+		newConn:        make(chan goJsConn),
 	}
 
-	pl.fetchListener.Set("onConn", js.FuncOf(pl.onConn))
+	fl.jsFetchListener.Set("onConn", js.FuncOf(fl.onConn))
 
-	return pl
+	return fl
 }
 
 func (fl *fetchListener) onConn(this js.Value, inputs []js.Value) interface{} {
 	jsConn := inputs[0]
-	conn := NewP2pConn(jsConn)
+	conn := NewGoJsConn(jsConn)
 	fl.newConn <- *conn
 	return nil
 }

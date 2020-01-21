@@ -84,12 +84,12 @@ export default class P2pTransport {
         if (!listener) {
             console.warn("no p2pListener!")
         }
-        if (!listener.onP2pConn) {
-            console.warn("no onP2pConn!")
+        if (!listener.onGoJsConn) {
+            console.warn("no onGoJsConn!")
         }
 
-        const conn = new P2pConn("0.0.0.0", "0.0.0.0")
-        listener.onP2pConn(conn)
+        const conn = new GoJsConn("0.0.0.0", "0.0.0.0")
+        listener.onGoJsConn(conn)
 
         const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
         console.log("trying to send request", reqString)

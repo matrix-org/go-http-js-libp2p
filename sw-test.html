@@ -17,9 +17,9 @@ limitations under the License.
 <html>
     <head>
         <meta charset="utf-8"/>
-        <script src="wasm_exec.js"></script>
-        <script src="dist/bundle.js"></script>
         <script>
+            // N.B. the bundle & WASM layer go into the sw, not our main html
+
             // test intercepting outbound HTTP requests in a service worker
             // and sending them to Go
 

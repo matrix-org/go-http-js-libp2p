@@ -1,5 +1,5 @@
 .DS_Store
-main.wasm
+*.wasm
 wasm_exec.js
 node_modules
 yarn.lock
