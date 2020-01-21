@@ -1,13 +1,18 @@
 ### go-http-js-libp2p
 
 Tunnel HTTP requests/responses in-browser from go-wasm over js-libp2p.
-In theory should be compatible with https://github.com/libp2p/go-libp2p-http
+In theory should be compatible with https://github.com/libp2p/go-libp2p-http.
+
+It also supports intercepting outbound HTTP requests in a service worker
+and routing them to WASM running in that service worker (although this
+should probably be split out somehow)
 
 To run:
 
 ```bash
 # for go:
-GOOS=js GOARCH=wasm go build -o main.wasm
+GOOS=js GOARCH=wasm go build -o main-libp2p-test.wasm main-libp2p-test.go
+GOOS=js GOARCH=wasm go build -o main-sw-test.wasm main-sw-test.go
 cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .
 
 # for js:

@@ -15,10 +15,10 @@
 
 // An pipe which has a go net.Conn implementation on one end
 // and a JS pull-stream implementation on the other.
-export default class P2pConn {
+export default class GoJsConn {
 
     constructor(localAddr, remoteAddr) {
-        console.log("created P2pConn", localAddr, remoteAddr)
+        console.debug("created GoJsConn", localAddr, remoteAddr)
         this.localAddr = localAddr
         this.remoteAddr = remoteAddr
 
@@ -38,14 +38,14 @@ export default class P2pConn {
     }
 
     fillRead(data) {
-        //console.log("filling readBuf with ", data)
+        //console.debug("filling readBuf with ", data)
         this.readBuf = this.readBuf.concat(data)
         this.readResolve()
         this.resetReadPromise()
     }
 
     fillWrite(data) {
-        //console.log("filling writeBuf with ", data)
+        //console.debug("filling writeBuf with ", data)
         this.writeBuf = this.writeBuf.concat(data)
         if (this.writeCb) {
             this.writeCb(null, this.writeBuf)
@@ -81,10 +81,10 @@ export default class P2pConn {
 
     // used by Go to read from this connection
     async read() {
-        console.log("awaiting readPromise")
+        console.debug("awaiting readPromise")
         await this.readPromise
-        console.log("awaited readPromise")
-        console.log("reading readBuf = ", this.readBuf)
+        console.debug("awaited readPromise")
+        console.debug("reading readBuf = ", this.readBuf)
         const data = this.readBuf
         this.readBuf = ''
         return data
@@ -92,7 +92,7 @@ export default class P2pConn {
 
     // used by Go to write to this connection
     write(buf) {
-        console.log("queuing buf for write: ", buf)
+        console.debug("queuing buf for write: ", buf)
         this.fillWrite(buf)
         return
     }

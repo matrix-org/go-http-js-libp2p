@@ -18,47 +18,52 @@ package go_http_js_libp2p
 import "net"
 import "syscall/js"
 
-type p2pListener struct {
-	jsP2pListener js.Value
+// this uses the JS->Go HTTP interface to inject
+// requests from a fetch listener, suitable for a service listener.
+
+// TODO: Ideally we should factor the JS->Go HTTP interface into its own
+// thing, for now we include this alongside the libp2p stuff with some
+// duplication.
+
+type fetchListener struct {
+	jsFetchListener js.Value
 	newConn        chan goJsConn
-	p2pLocalNode  *P2pLocalNode
 }
 
-func NewP2pListener(p2pLocalNode *P2pLocalNode) *p2pListener {
+func NewFetchListener() *fetchListener {
 	bridge := js.Global().Get("bridge")
 
-	pl := &p2pListener{
-		jsP2pListener: bridge.Call("newP2pListener", p2pLocalNode.Js()),
+	fl := &fetchListener{
+		jsFetchListener: bridge.Call("newFetchListener"),
 		newConn:        make(chan goJsConn),
-		p2pLocalNode:	p2pLocalNode,
 	}
 
-	pl.jsP2pListener.Set("onGoJsConn", js.FuncOf(pl.onGoJsConn))
+	fl.jsFetchListener.Set("onGoJsConn", js.FuncOf(fl.onGoJsConn))
 
-	return pl
+	return fl
 }
 
-func (pl *p2pListener) onGoJsConn(this js.Value, inputs []js.Value) interface{} {
+func (fl *fetchListener) onGoJsConn(this js.Value, inputs []js.Value) interface{} {
 	jsConn := inputs[0]
 	conn := NewGoJsConn(jsConn)
-	pl.newConn <- *conn
+	fl.newConn <- *conn
 	return nil
 }
 
 // Accept waits for and returns the next connection to the listener.
-func (pl *p2pListener) Accept() (net.Conn, error) {
+func (fl *fetchListener) Accept() (net.Conn, error) {
 	// block until we get told by JS about a new connection
-	conn := <-pl.newConn
+	conn := <-fl.newConn
 	return conn, nil
 }
 
 // Close closes the listener.
 // Any blocked Accept operations will be unblocked and return errors.
-func (pl *p2pListener) Close() error {
+func (pl *fetchListener) Close() error {
 	return nil
 }
 
 // Addr returns the listener's network address.
-func (pl *p2pListener) Addr() net.Addr {
+func (pl *fetchListener) Addr() net.Addr {
 	return nil
 }

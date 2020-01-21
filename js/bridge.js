@@ -16,6 +16,7 @@
 import P2pListener from './p2pListener.js'
 import P2pLocalNode from './p2pLocalNode.js'
 import P2pTransport from './p2pTransport.js'
+import FetchListener from './fetchListener.js'
 
 global.bridge = {
     newP2pLocalNode: async (service) => {
@@ -28,6 +29,11 @@ global.bridge = {
     },
     newP2pListener: (p2pLocalNode) => {
         return new P2pListener(p2pLocalNode)
+    },
+    newFetchListener: () => {
+        // FIXME: global hack
+        global.fetchListener = new FetchListener()
+        return global.fetchListener
     },
 }
 
@@ -47,9 +53,9 @@ async function test() {
             console.log(resp)
         }
     }
-    pl.onP2pConn = async function(p2pConn) {
-        console.log("reading from p2pConn:", await p2pConn.read())
-        p2pConn.write("HTTP/1.0 200 OK")
+    pl.onGoJsConn = async function(goJsConn) {
+        console.log("reading from goJsConn:", await goJsConn.read())
+        goJsConn.write("HTTP/1.0 200 OK")
     }
 }
 test();
