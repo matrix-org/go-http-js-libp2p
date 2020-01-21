@@ -38,12 +38,12 @@ func NewFetchListener() *fetchListener {
 		newConn:        make(chan goJsConn),
 	}
 
-	fl.jsFetchListener.Set("onConn", js.FuncOf(fl.onConn))
+	fl.jsFetchListener.Set("onGoJsConn", js.FuncOf(fl.onGoJsConn))
 
 	return fl
 }
 
-func (fl *fetchListener) onConn(this js.Value, inputs []js.Value) interface{} {
+func (fl *fetchListener) onGoJsConn(this js.Value, inputs []js.Value) interface{} {
 	jsConn := inputs[0]
 	conn := NewGoJsConn(jsConn)
 	fl.newConn <- *conn

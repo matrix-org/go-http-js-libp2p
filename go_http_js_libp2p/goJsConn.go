@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package go_http_js_libgoJs
+package go_http_js_libp2p
 
 import "net"
 import "log"

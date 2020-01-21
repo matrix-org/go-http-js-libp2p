@@ -15,7 +15,7 @@
 
 import { pull } from "pull-stream"
 
-import GoJsConn from './p2pConn.js'
+import GoJsConn from './goJsConn.js'
 
 import { promisify } from "es6-promisify"
 
@@ -30,21 +30,21 @@ export default class P2pListener {
             const pi = await getPeerInfo()
 
             // create the go-server-facing side of the connection
-            const p2pConn = new GoJsConn(p2pLocalNode.node.idStr, pi.id.toB58String())
-            this.onGoJsConn(p2pConn)
+            const goJsConn = new GoJsConn(p2pLocalNode.node.idStr, pi.id.toB58String())
+            this.onGoJsConn(goJsConn)
   
             pull(
                 conn,
-                p2pConn.fillReadSink.bind(p2pConn),
+                goJsConn.fillReadSink.bind(goJsConn),
             )
 
             pull(
-                p2pConn.consumeWriteSource.bind(p2pConn),
+                goJsConn.consumeWriteSource.bind(goJsConn),
                 conn,
             )
         })        
     }
 
     // implemented in Go
-    // onGoJsConn(p2pConn) {}
+    // onGoJsConn(goJsConn) {}
 }

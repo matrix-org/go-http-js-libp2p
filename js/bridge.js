@@ -53,9 +53,9 @@ async function test() {
             console.log(resp)
         }
     }
-    pl.onGoJsConn = async function(p2pConn) {
-        console.log("reading from p2pConn:", await p2pConn.read())
-        p2pConn.write("HTTP/1.0 200 OK")
+    pl.onGoJsConn = async function(goJsConn) {
+        console.log("reading from goJsConn:", await goJsConn.read())
+        goJsConn.write("HTTP/1.0 200 OK")
     }
 }
 test();

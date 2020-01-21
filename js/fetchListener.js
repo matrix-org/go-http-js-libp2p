@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import GoJsConn from './p2pConn.js'
+import GoJsConn from './goJsConn.js'
 
 import { promisify } from "es6-promisify"
 
@@ -24,17 +24,18 @@ export default class FetchListener {
 
     onFetch(event) {
         // create the go-server-facing side of the connection
-        const p2pConn = new GoJsConn("localhost", "localhost")
-        this.onGoJsConn(p2pConn)
+        const goJsConn = new GoJsConn("localhost", "localhost")
+        this.onGoJsConn(goJsConn)
 
+        /*
         const reqStream = event.request.body
         const reqReader = reqStream.getReader()
 
-        // wire the reqStream to the p2pConn's readSink
+        // wire the reqStream to the goJsConn's readSink
         reqStream.pipeTo(new WriteableStream({
             write(chunk) {
                 return new Promise((resolve, reject) => {
-                    p2pConn.fillRead(chunk)
+                    goJsConn.fillRead(chunk)
                     resolve()
                 })
             },
@@ -48,16 +49,23 @@ export default class FetchListener {
         })).then(()=>{
             console.log("finished piping request to go")
         })
+        */
 
-        // wire the respStream to the p2pConn's writeSource
+        const req = event.request
+        const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
+        // todo headers
+        // todo streaming body
+        goJsConn.fillRead(reqString)
+
+        // wire the respStream to the goJsConn's writeSource
         const respStream = new ReadableStream({
             pull(controller) {
-                p2pConn.consumeWriteSource(null, (chunk)=>{
+                goJsConn.consumeWriteSource(null, (chunk)=>{
                     controller.enqueue(chunk)
                 })
             },
             cancel(controller) {
-                p2pConn.consumeWriteSource(true)
+                goJsConn.consumeWriteSource(true)
             }
         })
 
@@ -70,5 +78,5 @@ export default class FetchListener {
 
 
     // implemented in Go
-    // onGoJsConn(p2pConn) {}
+    // onGoJsConn(goJsConn) {}
 }
