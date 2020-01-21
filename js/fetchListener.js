@@ -15,6 +15,9 @@
 
 import GoJsConn from './goJsConn.js'
 
+import { pull } from "pull-stream"
+import concat from "pull-stream/sinks/concat"
+
 import { promisify } from "es6-promisify"
 
 export default class FetchListener {
@@ -22,7 +25,7 @@ export default class FetchListener {
     constructor() {
     }
 
-    onFetch(event) {
+    async onFetch(event) {
         // create the go-server-facing side of the connection
         const goJsConn = new GoJsConn("localhost", "localhost")
         this.onGoJsConn(goJsConn)
@@ -52,12 +55,42 @@ export default class FetchListener {
         */
 
         const req = event.request
-        const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
+        const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.bodyUsed ? req.body : ''}`
         // todo headers
         // todo streaming body
         goJsConn.fillRead(reqString)
 
+        // we pull the http response out of go and parse it
+        // FIXME: use streams.
+        // XXX: duplicated from p2pTransport
+        let respResolve
+        const respPromise = new Promise((resolve, reject) => { respResolve = resolve })
+
+        let respString
+        pull(
+            goJsConn.consumeWriteSource.bind(goJsConn),
+            concat((err, data) => {
+                if (err) throw err
+                respString = data
+                respResolve()
+            }),
+        )
+
+        await respPromise
+        const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))(\r\n([^]*?)?(\r\n\r\n([^]*?)))?$/)
+        if (!m) {
+            console.warn("couldn't parse resp", respString)
+        }
+        const response = {
+            "proto": m[1],
+            "status": m[2],
+            "statusCode": parseInt(m[3]),
+            "headers": m[6],
+            "body": m[8],
+        }
+
         // wire the respStream to the goJsConn's writeSource
+/*
         const respStream = new ReadableStream({
             pull(controller) {
                 goJsConn.consumeWriteSource(null, (chunk)=>{
@@ -68,9 +101,10 @@ export default class FetchListener {
                 goJsConn.consumeWriteSource(true)
             }
         })
+        */
 
-        const resp = new Response(respStream, {
-            status: 200,
+        const resp = new Response(response.body, {
+            status: response.statusCode,
         })
 
         return resp

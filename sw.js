@@ -33,9 +33,9 @@ self.addEventListener('fetch', function(event) {
     console.log("intercepted " + event.request.url)
     if (event.request.url.match(/\/_matrix/)) {
         if (global.fetchListener) {
-            // event.respondWith(new Promise((resolve, reject)=>{
-            //     resolve(global.fetchListener.onFetch.bind(event))
-            // }))
+            // event.respondWith((async ()=>{
+            //     global.fetchListener.onFetch(event)
+            // })())
             event.respondWith(global.fetchListener.onFetch(event))
         }
         else {
