@@ -30,7 +30,7 @@ type P2pLocalNode struct {
 }
 
 func NewP2pLocalNode(service string) *P2pLocalNode {
-	bridge := js.Global().Get("bridge")
+	bridge := js.Global().Get("_go_http_bridge")
 
 	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service))
 	if !ok {
