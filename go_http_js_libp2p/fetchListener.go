@@ -31,7 +31,7 @@ type fetchListener struct {
 }
 
 func NewFetchListener() *fetchListener {
-	bridge := js.Global().Get("bridge")
+	bridge := js.Global().Get("_go_http_bridge")
 
 	fl := &fetchListener{
 		jsFetchListener: bridge.Call("newFetchListener"),

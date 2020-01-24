@@ -28,14 +28,10 @@ self.addEventListener('activate', function(event) {
     })
 })
 
-// we assume we already have a SW hanging around and we're running within it
 self.addEventListener('fetch', function(event) {
     console.log("intercepted " + event.request.url)
     if (event.request.url.match(/\/_matrix/)) {
         if (global.fetchListener) {
-            // event.respondWith((async ()=>{
-            //     global.fetchListener.onFetch(event)
-            // })())
             event.respondWith(global.fetchListener.onFetch(event))
         }
         else {

@@ -28,7 +28,7 @@ type p2pTransport struct {
 }
 
 func NewP2pTransport(p2pLocalNode *P2pLocalNode) *p2pTransport {
-	bridge := js.Global().Get("bridge")
+	bridge := js.Global().Get("_go_http_bridge")
 	pt := &p2pTransport{
 		p2pLocalNode: p2pLocalNode,
 		jsP2pTransport: bridge.Call("newP2pTransport", p2pLocalNode.Js()),

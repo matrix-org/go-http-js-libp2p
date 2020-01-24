@@ -47,7 +47,7 @@ type goJsConn struct {
 }
 
 func NewGoJsConn(jsGoJsConn js.Value) *goJsConn {
-	// bridge := js.Global().Get("bridge")
+	// bridge := js.Global().Get("_go_http_bridge")
 	//
 	// if jsGoJsConn == nil {
 	// 	jsGoJsConn = bridge.Call("newGoJsConn", localAddr.String(), remoteAddr.String())

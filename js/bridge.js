@@ -18,7 +18,7 @@ import P2pLocalNode from './p2pLocalNode.js'
 import P2pTransport from './p2pTransport.js'
 import FetchListener from './fetchListener.js'
 
-global.bridge = {
+global._go_http_bridge = {
     newP2pLocalNode: async (service) => {
         const p2pLocalNode = new P2pLocalNode(service)
         await p2pLocalNode.init()
@@ -39,9 +39,9 @@ global.bridge = {
 
 /*
 async function test() {
-    const pln = await bridge.newP2pLocalNode("matrix")
-    const pt = bridge.newP2pTransport(pln)
-    const pl = bridge.newP2pListener(pln)
+    const pln = await _go_http_bridge.newP2pLocalNode("matrix")
+    const pt = _go_http_bridge.newP2pTransport(pln)
+    const pl = _go_http_bridge.newP2pListener(pln)
     pln.onFoundProvider = async function(pi) {
         if (location.hash != '#server') {
             const req = {

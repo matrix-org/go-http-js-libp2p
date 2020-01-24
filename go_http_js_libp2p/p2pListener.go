@@ -25,7 +25,7 @@ type p2pListener struct {
 }
 
 func NewP2pListener(p2pLocalNode *P2pLocalNode) *p2pListener {
-	bridge := js.Global().Get("bridge")
+	bridge := js.Global().Get("_go_http_bridge")
 
 	pl := &p2pListener{
 		jsP2pListener: bridge.Call("newP2pListener", p2pLocalNode.Js()),
