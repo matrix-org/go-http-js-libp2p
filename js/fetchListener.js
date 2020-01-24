@@ -55,13 +55,24 @@ export default class FetchListener {
         */
 
         const req = event.request
-        const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.bodyUsed ? req.body : ''}`
+        let reqHeaders = ''
+        if (req.headers) {
+            for (const header of req.headers) {
+                // FIXME: is this a safe header encoding?
+                reqHeaders += `${header[0]}: ${header[1]}\n`
+            }
+        }
+        if (reqHeaders.length > 0) {
+            reqHeaders = `\r\n${reqHeaders}`
+        }
+
+        const reqString = `${req.method} ${req.url} HTTP/1.0${reqHeaders}\r\n\r\n${req.bodyUsed ? req.body : ''}`
         // todo headers
         // todo streaming body
         goJsConn.fillRead(reqString)
 
         // we pull the http response out of go and parse it
-        // FIXME: use streams.
+        // FIXME: stream the response body
         // XXX: duplicated from p2pTransport
         let respResolve
         const respPromise = new Promise((resolve, reject) => { respResolve = resolve })
@@ -89,6 +100,19 @@ export default class FetchListener {
             "body": m[8],
         }
 
+        const respHeaders = new Headers()
+        const headerLines = response.headers.split('\r\n')
+        for (const headerLine of headerLines) {
+            const match = headerLine.match(/^(.+?): *(.*?)$/)
+            if (match) {
+                respHeaders.append(match[1], match[2])
+            }
+            else {
+                console.log("couldn't parse headerLine ", headerLine)
+            }
+        }
+        console.log("headers", respHeaders)
+
         // wire the respStream to the goJsConn's writeSource
 /*
         const respStream = new ReadableStream({
@@ -103,8 +127,10 @@ export default class FetchListener {
         })
         */
 
+        // FIXME: stream the response body
         const resp = new Response(response.body, {
             status: response.statusCode,
+            headers: respHeaders,
         })
 
         return resp

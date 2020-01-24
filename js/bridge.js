@@ -39,9 +39,9 @@ global._go_http_bridge = {
 
 /*
 async function test() {
-    const pln = await bridge.newP2pLocalNode("matrix")
-    const pt = bridge.newP2pTransport(pln)
-    const pl = bridge.newP2pListener(pln)
+    const pln = await _go_http_bridge.newP2pLocalNode("matrix")
+    const pt = _go_http_bridge.newP2pTransport(pln)
+    const pl = _go_http_bridge.newP2pListener(pln)
     pln.onFoundProvider = async function(pi) {
         if (location.hash != '#server') {
             const req = {
