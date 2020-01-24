@@ -103,6 +103,7 @@ export default class FetchListener {
         const respHeaders = new Headers()
         const headerLines = response.headers.split('\r\n')
         for (const headerLine of headerLines) {
+            // FIXME: is this safe header parsing? Do we need to worry about line-wrapping?
             const match = headerLine.match(/^(.+?): *(.*?)$/)
             if (match) {
                 respHeaders.append(match[1], match[2])
