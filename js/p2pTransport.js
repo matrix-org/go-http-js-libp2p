@@ -46,7 +46,19 @@ export default class P2pTransport {
         // the world's dumbest HTTP client.
         // it would be much better to hook up go's HTTP client (and then we'd get HTTP/2 etc)
         // but we can't because https://github.com/golang/go/issues/27495
-        const reqString = `${req.method} ${req.url} HTTP/1.0\r\n\r\n${req.body}`
+
+        let reqHeaders = ''
+        if (req.headers) {
+            for (const header of req.headers) {
+                // FIXME: is this a safe header encoding?
+                reqHeaders += `${header[0]}: ${header[1]}\n`
+            }
+        }
+        if (reqHeaders.length > 0) {
+            reqHeaders = `\r\n${reqHeaders}`
+        }
+
+        const reqString = `${req.method} ${req.url} HTTP/1.0${reqHeaders}\r\n\r\n${req.body}`
         pull(
             pull.values([reqString]),
             conn,
@@ -70,11 +82,25 @@ export default class P2pTransport {
         if (!m) {
             console.warn("couldn't parse resp", respString)
         }
-        const headers = m[6]
+
+        const respHeaders = []
+        const headerLines = m[6].split('\r\n')
+        for (const headerLine of headerLines) {
+            // FIXME: is this safe header parsing? Do we need to worry about line-wrapping?
+            const match = headerLine.match(/^(.+?): *(.*?)$/)
+            if (match) {
+                respHeaders.push([match[1], match[2]])
+            }
+            else {
+                console.log("couldn't parse headerLine ", headerLine)
+            }
+        }
+
         const resp = {
             "proto": m[1],
             "status": m[2],
             "statusCode": parseInt(m[3]),
+            "headers": respHeaders,
             "body": m[8],
         }
 

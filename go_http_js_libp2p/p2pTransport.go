@@ -19,6 +19,7 @@ import "io"
 import "io/ioutil"
 import "log"
 import "strings"
+import "strconv"
 import "net/http"
 import "syscall/js"
 
@@ -48,12 +49,25 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		body = string(b)
 	}
 
+	log.Printf("Req headers are %r", req.Header)
+	reqHeaders := js.Global().Get("Array").New()
+	i := 0
+	for name, values := range req.Header {
+		for _, value := range values {
+			header := js.Global().Get("Array").New()
+			header.SetIndex(0, name)
+			header.SetIndex(1, value)
+			reqHeaders.SetIndex(i, header)
+		}
+		i++
+	}
+
 	// FIXME: handle headers
 
 	jsReq := js.ValueOf(map[string]interface{}{
 		"method": req.Method,
 		"url":    req.URL.String(), // FIXME: we could avoid compiling/reparsing the URI
-		//"header": req.Header, // map[string][]string{}
+		"headers": reqHeaders, // map[string][]string{}
 		"body": body,
 	})
 
@@ -61,17 +75,23 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	log.Printf("jsResponse is %+v, ok is %+v\n", jsResponse.Get("status"), ok)
 
+	respHeaders := make(map[string][]string)
+	jsRespHeaders := jsResponse.Get("headers")
+	for i := 0; i < jsRespHeaders.Length(); i++ {
+		key := jsRespHeaders.Get(strconv.Itoa(i)).Get("0").String()
+		value := jsRespHeaders.Get(strconv.Itoa(i)).Get("1").String()
+		respHeaders[key] = append(respHeaders[key], value)
+	}
+
 	response := &http.Response{
 		Status:     jsResponse.Get("status").String(),
 		StatusCode: jsResponse.Get("statusCode").Int(),
 		Proto:      "HTTP/1.0",
 		ProtoMajor: 1,
 		ProtoMinor: 0,
-		// Header: map[string][]string{
-		//     "Content-Type": {"text/plain"},
-		// },
-		Body:    NewPeerReadCloser(jsResponse.Get("body").String()), // FIXME: support streaming resp bodies
-		Request: req,
+		Header: 	respHeaders,
+		Body:       NewPeerReadCloser(jsResponse.Get("body").String()), // FIXME: support streaming resp bodies
+		Request:    req,
 	}
 
 	return response, nil

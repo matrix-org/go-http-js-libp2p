@@ -41,7 +41,10 @@ func main() {
 	node.RegisterFoundProvider(func(pi *go_http_js_libp2p.PeerInfo) {
 		go func() {
 			log.Printf("Trying to GET libp2p-http://%s/ping", pi.Id)
-			resp, err := client.Get(fmt.Sprintf("libp2p-http://%s/ping", pi.Id))
+
+			req, err := http.NewRequest("GET", fmt.Sprintf("libp2p-http://%s/ping", pi.Id), nil)
+			req.Header.Add("Testing-Headers", "testing")
+			resp, err := client.Do(req)
 			if err != nil {
 				log.Fatal("Can't make request")
 			}
@@ -54,6 +57,7 @@ func main() {
 				}
 				bodyString := string(bodyBytes)
 				log.Printf("Received body: %s", bodyString)
+				log.Printf("Received headers: %r", resp.Header)
 			}
 		}()
 	})

@@ -112,7 +112,6 @@ export default class FetchListener {
                 console.log("couldn't parse headerLine ", headerLine)
             }
         }
-        console.log("headers", respHeaders)
 
         // wire the respStream to the goJsConn's writeSource
 /*
