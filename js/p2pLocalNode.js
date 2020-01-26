@@ -25,11 +25,14 @@ const createPeerInfo = promisify(PeerInfo.create);
 
 export default class P2pLocalNode {
 
-    constructor(service) {
+    constructor(service, addrs) {
+        console.log(`p2plocalnode called with ${service} and ${addrs}`)
         this.service = service
+        this.addrs = addrs
     }
 
     async init() {
+        console.log(`init`)
         const peerInfo = await createPeerInfo()
 
         const peerIdStr = peerInfo.id.toB58String() 
@@ -38,8 +41,11 @@ export default class P2pLocalNode {
 //      peerInfo.multiaddrs.add(webrtcAddr)
 //      peerInfo.multiaddrs.add(wsAddr)
 
-        const wsAddr = `/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/`
-        peerInfo.multiaddrs.add(wsAddr)
+        for (const addr of this.addrs) {
+            peerInfo.multiaddrs.add(addr)
+        }
+
+        console.log(`added`)
 
         const node = new Node({
             peerInfo

@@ -17,10 +17,12 @@ package go_http_js_libp2p
 
 import "syscall/js"
 import "log"
+import "strconv"
 
 type P2pLocalNode struct {
 	jsP2pLocalNode js.Value
 	Service string
+	Id string
 
 	// peers []PeerInfo
 	handlePeerDiscover func(*PeerInfo)
@@ -29,10 +31,16 @@ type P2pLocalNode struct {
 	handleFoundProvider func(*PeerInfo)
 }
 
-func NewP2pLocalNode(service string) *P2pLocalNode {
+func NewP2pLocalNode(service string, addrs []string) *P2pLocalNode {
 	bridge := js.Global().Get("_go_http_bridge")
 
-	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service))
+	var jsAddrs js.Value
+	jsAddrs = js.Global().Get("Array").New()
+	for i, addr := range addrs {
+		jsAddrs.Set(strconv.Itoa(i), addr)
+	}
+
+	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service, jsAddrs))
 	if !ok {
 		log.Fatal("couldn't create newP2pLocalNode")
 	}
@@ -40,6 +48,7 @@ func NewP2pLocalNode(service string) *P2pLocalNode {
 	pn := &P2pLocalNode{
 		jsP2pLocalNode: jsP2pLocalNode,
 		Service: service,
+		Id: jsP2pLocalNode.Get("idStr").String(),
 	}
 
 	// set up js->go callbacks

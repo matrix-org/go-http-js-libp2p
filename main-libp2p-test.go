@@ -28,7 +28,7 @@ func init() {
 }
 
 func main() {
-	node := go_http_js_libp2p.NewP2pLocalNode("org.matrix.p2p.experiment")
+	node := go_http_js_libp2p.NewP2pLocalNode("org.matrix.p2p.experiment", []string{"/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/"})
 	server(node)
 
 	// due to https://github.com/golang/go/issues/27495 we can't override the DialContext

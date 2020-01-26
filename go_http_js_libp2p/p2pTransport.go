@@ -62,8 +62,6 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		i++
 	}
 
-	// FIXME: handle headers
-
 	jsReq := js.ValueOf(map[string]interface{}{
 		"method": req.Method,
 		"url":    req.URL.String(), // FIXME: we could avoid compiling/reparsing the URI
