@@ -64,8 +64,9 @@ export default class FetchListener {
         }
         let jj = null;
         if (req.method === "POST" || req.method === "PUT") {
-            jj = await req.text();
-            reqHeaders += `Content-Length: ${jj.length}`;
+            jj = await req.json();
+            jj = JSON.stringify(jj);
+            reqHeaders += `Content-Length: ${new Blob([jj]).size}`; // include utf-8 chars properly
         }
 
         if (reqHeaders.length > 0) {
