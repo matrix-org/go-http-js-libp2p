@@ -33,6 +33,7 @@ global._go_http_bridge = {
     newFetchListener: () => {
         // FIXME: global hack
         global.fetchListener = new FetchListener()
+        console.log("Assigned global fetcher listener")
         return global.fetchListener
     },
 }
