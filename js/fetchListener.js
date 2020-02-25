@@ -62,13 +62,20 @@ export default class FetchListener {
                 reqHeaders += `${header[0]}: ${header[1]}\n`
             }
         }
+        let jj = null;
+        if (req.method === "POST" || req.method === "PUT") {
+            jj = await req.text();
+            reqHeaders += `Content-Length: ${jj.length}`;
+        }
+
         if (reqHeaders.length > 0) {
             reqHeaders = `\r\n${reqHeaders}`
         }
-
-        const reqString = `${req.method} ${req.url} HTTP/1.0${reqHeaders}\r\n\r\n${req.bodyUsed ? req.body : ''}`
+        
+        const reqString = `${req.method} ${req.url} HTTP/1.0${reqHeaders}\r\n\r\n${jj ? jj : ''}`
         // todo headers
         // todo streaming body
+        console.log(reqString);
         goJsConn.fillRead(reqString)
 
         // we pull the http response out of go and parse it
