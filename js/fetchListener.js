@@ -72,8 +72,13 @@ export default class FetchListener {
         if (reqHeaders.length > 0) {
             reqHeaders = `\r\n${reqHeaders}`
         }
+
+        // Replace the timeout value for /sync calls to be 20s not 30s because Firefox
+        // will aggressively cull service workers after a 30s idle period. Chrome doesn't.
+        // See https://bugzilla.mozilla.org/show_bug.cgi?id=1378587
+        const fullurl = req.url.replace("timeout=30000", "timeout=20000");
         
-        const reqString = `${req.method} ${req.url} HTTP/1.0${reqHeaders}\r\n\r\n${jj ? jj : ''}`
+        const reqString = `${req.method} ${fullurl} HTTP/1.0${reqHeaders}\r\n\r\n${jj ? jj : ''}`
         // todo headers
         // todo streaming body
         console.log(reqString);

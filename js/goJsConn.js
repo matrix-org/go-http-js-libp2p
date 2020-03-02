@@ -81,10 +81,10 @@ export default class GoJsConn {
 
     // used by Go to read from this connection
     async read() {
-        console.debug("awaiting readPromise")
+        //console.debug("awaiting readPromise")
         await this.readPromise
-        console.debug("awaited readPromise")
-        console.debug("reading readBuf = ", this.readBuf)
+        //console.debug("awaited readPromise")
+        //console.debug("reading readBuf = ", this.readBuf)
         const data = this.readBuf
         this.readBuf = ''
         return data
@@ -92,7 +92,7 @@ export default class GoJsConn {
 
     // used by Go to write to this connection
     write(buf) {
-        console.debug("queuing buf for write: ", buf)
+        //console.debug("queuing buf for write: ", buf)
         this.fillWrite(buf)
         return
     }

@@ -45,7 +45,8 @@ export default class P2pLocalNode {
             peerInfo.multiaddrs.add(addr)
         }
 
-        console.log(`added`)
+        console.log(`added`, peerInfo);
+	console.log("id: " + JSON.stringify(peerInfo.id));
 
         const node = new Node({
             peerInfo
@@ -53,7 +54,7 @@ export default class P2pLocalNode {
 
         this.node = node
 
-        node.idStr = peerIdStr
+        this.idStr = peerIdStr
 
         node.on('peer:discovery', (pi) => {
             console.debug('Discovered a peer:', pi.id.toB58String())

@@ -23,14 +23,15 @@ export default class P2pListener {
 
     constructor(p2pLocalNode) {
         this.p2pLocalNode = p2pLocalNode
+        const protocol = '/libp2p-http/1.0.0';
 
-        const node = p2pLocalNode.node
-        node.handle('/libp2p-http/1.0.0', async (protocol, conn) => {
+        const node = p2pLocalNode.node;
+        node.handle(protocol, async (protocol, conn) => {
             const getPeerInfo = promisify(conn.getPeerInfo.bind(conn))
             const pi = await getPeerInfo()
 
             // create the go-server-facing side of the connection
-            const goJsConn = new GoJsConn(p2pLocalNode.node.idStr, pi.id.toB58String())
+            const goJsConn = new GoJsConn(p2pLocalNode.idStr, pi.id.toB58String())
             this.onGoJsConn(goJsConn)
   
             pull(
@@ -42,7 +43,8 @@ export default class P2pListener {
                 goJsConn.consumeWriteSource.bind(goJsConn),
                 conn,
             )
-        })        
+        })
+        console.log("Awaiting p2p connections for protocol: ", protocol);    
     }
 
     // implemented in Go
