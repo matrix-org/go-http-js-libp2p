@@ -47,6 +47,19 @@ export default class GoJsConn {
     fillWrite(data) {
         //console.debug("filling writeBuf with ", data)
         this.writeBuf = this.writeBuf.concat(data)
+
+        // determine if we should invoke the callback.
+        // Go's net/http server will write in 4k chunks: https://golang.org/src/net/http/server.go#L1819
+        // which sucks because our response are often >4k
+        // so we need to frame requests.
+
+        const writeSizeBytes = new Blob([data]).size;
+        // FIXME: We do this by fighting fire with fire and also hardcoding write checks in the data ;)
+        if (writeSizeBytes == 4096) {
+            console.log("Write is 4096 bytes, expecting more.");
+            return;
+        }
+
         if (this.writeCb) {
             this.writeCb(null, this.writeBuf)
             this.writeBuf = ''
@@ -90,9 +103,8 @@ export default class GoJsConn {
         return data
     }
 
-    // used by Go to write to this connection
+    // used by Go to write to this connection.
     write(buf) {
-        //console.debug("queuing buf for write: ", buf)
         this.fillWrite(buf)
         return
     }

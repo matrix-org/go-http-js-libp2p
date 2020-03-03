@@ -57,6 +57,10 @@ export default class P2pTransport {
                     reqHeaders += `${header[0]}: ${header[1]}\n`
                 }
             }
+            if (req.method === "POST" || req.method === "PUT") {
+                reqHeaders += `Content-Length: ${new Blob([req.body]).size}`; // include utf-8 chars properly
+            }
+
             if (reqHeaders.length > 0) {
                 reqHeaders = `\r\n${reqHeaders}`
             }
