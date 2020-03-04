@@ -46,7 +46,7 @@ export default class P2pLocalNode {
         }
 
         console.log(`added`, peerInfo);
-	console.log("id: " + JSON.stringify(peerInfo.id));
+	    console.log("id: " + JSON.stringify(peerInfo.id));
 
         const node = new Node({
             peerInfo
@@ -56,15 +56,29 @@ export default class P2pLocalNode {
 
         this.idStr = peerIdStr
 
+
+        let discoveredPeers = 0;
         node.on('peer:discovery', (pi) => {
-            console.debug('Discovered a peer:', pi.id.toB58String())
+            discoveredPeers += 1;
+            if (discoveredPeers < 20) {
+                console.debug('Discovered a peer:', pi.id.toB58String());
+            } else if (discoveredPeers === 20) {
+                console.debug("Discovered many peers: silencing output.");
+            }
+
             // tell go
             if (this.onPeerDiscover) this.onPeerDiscover(pi)
         })
 
+        let connectedPeers = 0;
         node.on('peer:connect', (pi) => {
+            connectedPeers += 1;
             const idStr = pi.id.toB58String()
-            console.debug('Got connection to: ' + idStr)
+            if (connectedPeers < 20) {
+                console.debug('Got connection to: ' + idStr)
+            } else if (connectedPeers === 20) {
+                console.debug("Connected to many peers: silencing output.");
+            }
             // tell go
             if (this.onPeerConnect) this.onPeerConnect(pi)
         })
@@ -81,7 +95,7 @@ export default class P2pLocalNode {
         const findProviders = () => {
             node.contentRouting.findProviders(cid, { maxTimeout: 5000 }, (err, providers) => {
                 if (err) { throw err }
-                console.log('Found providers:', providers.map(p => p.id.toB58String()))
+                console.log('Connected peers: ', connectedPeers, " Discovered peers: ", discoveredPeers, ' Found providers:', providers.map(p => p.id.toB58String()))
                 providers = providers.filter(p => p.id.toB58String() != peerIdStr)
                 if (this.onFoundProvider) {
                     for (const p of providers) {
