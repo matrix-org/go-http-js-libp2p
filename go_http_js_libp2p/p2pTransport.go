@@ -15,13 +15,16 @@
 
 package go_http_js_libp2p
 
-import "io"
-import "io/ioutil"
-import "log"
-import "strings"
-import "strconv"
-import "net/http"
-import "syscall/js"
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"syscall/js"
+)
 
 type p2pTransport struct {
 	p2pLocalNode   *P2pLocalNode
