@@ -24,14 +24,14 @@ import "net/http"
 import "syscall/js"
 
 type p2pTransport struct {
-	p2pLocalNode *P2pLocalNode
+	p2pLocalNode   *P2pLocalNode
 	jsP2pTransport js.Value
 }
 
 func NewP2pTransport(p2pLocalNode *P2pLocalNode) *p2pTransport {
 	bridge := js.Global().Get("_go_http_bridge")
 	pt := &p2pTransport{
-		p2pLocalNode: p2pLocalNode,
+		p2pLocalNode:   p2pLocalNode,
 		jsP2pTransport: bridge.Call("newP2pTransport", p2pLocalNode.Js()),
 	}
 	return pt
@@ -63,13 +63,17 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	jsReq := js.ValueOf(map[string]interface{}{
-		"method": req.Method,
-		"url":    req.URL.String(), // FIXME: we could avoid compiling/reparsing the URI
-		"headers": reqHeaders, // map[string][]string{}
-		"body": body,
+		"method":  req.Method,
+		"url":     req.URL.String(), // FIXME: we could avoid compiling/reparsing the URI
+		"headers": reqHeaders,       // map[string][]string{}
+		"body":    body,
 	})
 
 	jsResponse, ok := Await(pt.jsP2pTransport.Call("roundTrip", jsReq))
+
+	if jsResponse.Get("error").Truthy() {
+		return nil, fmt.Errorf("JS error: %s", jsResponse.Get("error").String())
+	}
 
 	log.Printf("jsResponse is %+v, ok is %+v\n", jsResponse.Get("status"), ok)
 
@@ -87,7 +91,7 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		Proto:      "HTTP/1.0",
 		ProtoMajor: 1,
 		ProtoMinor: 0,
-		Header: 	respHeaders,
+		Header:     respHeaders,
 		Body:       NewPeerReadCloser(jsResponse.Get("body").String()), // FIXME: support streaming resp bodies
 		Request:    req,
 	}

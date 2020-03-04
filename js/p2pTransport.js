@@ -117,6 +117,9 @@ export default class P2pTransport {
         } catch (err) {
             console.error("P2pTransport round trip error: ");
             console.error(err);
+            return {
+                "error": "p2pTransport.js error: " + err,
+            };
         }
     }
 }
