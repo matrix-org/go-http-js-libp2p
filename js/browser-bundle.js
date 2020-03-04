@@ -80,6 +80,12 @@ class Node extends libp2p {
           enabled: false
         }
       },
+      switch: {
+        dialTimeout: 30 * 1000, // 30s
+        denyAttempts: 20,
+        denyTTL: 10 * 1000,
+        maxParallelDials: 20,
+      },
       connectionManager: {
         minPeers: 10,
         maxPeers: 50

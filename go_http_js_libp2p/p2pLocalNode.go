@@ -21,14 +21,14 @@ import "strconv"
 
 type P2pLocalNode struct {
 	jsP2pLocalNode js.Value
-	Service string
-	Id string
+	Service        string
+	Id             string
 
 	// peers []PeerInfo
-	handlePeerDiscover func(*PeerInfo)
-	handlePeerConnect func(*PeerInfo)
+	handlePeerDiscover   func(*PeerInfo)
+	handlePeerConnect    func(*PeerInfo)
 	handlePeerDisconnect func(*PeerInfo)
-	handleFoundProvider func(*PeerInfo)
+	handleFoundProvider  func(*PeerInfo)
 }
 
 func NewP2pLocalNode(service string, addrs []string) *P2pLocalNode {
@@ -47,8 +47,8 @@ func NewP2pLocalNode(service string, addrs []string) *P2pLocalNode {
 
 	pn := &P2pLocalNode{
 		jsP2pLocalNode: jsP2pLocalNode,
-		Service: service,
-		Id: jsP2pLocalNode.Get("idStr").String(),
+		Service:        service,
+		Id:             jsP2pLocalNode.Get("idStr").String(),
 	}
 
 	// set up js->go callbacks

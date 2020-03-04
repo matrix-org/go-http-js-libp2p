@@ -108,7 +108,8 @@ export default class P2pLocalNode {
 
         node.start((err) => {
             if (err) {
-                return console.log(err)
+                console.error(err);
+                return;
             }
 
             // advertise our magic CID to announce our participation in this specific network

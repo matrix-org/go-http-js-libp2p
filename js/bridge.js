@@ -20,9 +20,14 @@ import FetchListener from './fetchListener.js'
 
 global._go_http_bridge = {
     newP2pLocalNode: async (service, addrs) => {
-        const p2pLocalNode = new P2pLocalNode(service, addrs)
-        await p2pLocalNode.init()
-        return p2pLocalNode
+        try {
+            const p2pLocalNode = new P2pLocalNode(service, addrs);
+            await p2pLocalNode.init();
+            return p2pLocalNode;
+        }
+        catch (err) {
+            console.error("Failed to create newP2pLocalNode: ", err);
+        }
     },
     newP2pTransport: (p2pLocalNode) => {
         return new P2pTransport(p2pLocalNode)
