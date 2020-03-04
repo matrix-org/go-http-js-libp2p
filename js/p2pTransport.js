@@ -37,7 +37,9 @@ export default class P2pTransport {
             const host = (req.url.match(/^matrix:\/\/(.*?)\//))[1]
             const destPeerId = PeerId.createFromB58String(host)
             const destPeerInfo = new PeerInfo(destPeerId);
-            destPeerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/');
+            this.p2pLocalNode.addrs.forEach((a) => {
+                destPeerInfo.multiaddrs.add(a);
+            });
 
             // dial out over libp2p
             const node = this.p2pLocalNode.node
