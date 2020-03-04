@@ -33,7 +33,7 @@ export default class P2pTransport {
             // figure out what address we're connecting to
             // we can't use the url npm module, as it lowercases the host
             // we can't use the browser's Url module, as it doesn't parse hosts for unknown URI schemes
-            console.log("roundTrip: ", req.method, " ", req.url, " ", req.body);
+            console.log("p2pTransport: roundTrip: ", req.method, " ", req.url, " ", req.body);
             const host = (req.url.match(/^matrix:\/\/(.*?)\//))[1]
             const destPeerId = PeerId.createFromB58String(host)
             const destPeerInfo = new PeerInfo(destPeerId);
@@ -44,7 +44,7 @@ export default class P2pTransport {
             // dial out over libp2p
             const node = this.p2pLocalNode.node
             const dial = promisify(node.dialProtocol)
-            console.log("Dialling ", JSON.stringify(destPeerInfo));
+            console.log("p2pTransport: Dialling ", JSON.stringify(destPeerInfo));
 
             const conn = await dial(destPeerInfo, '/libp2p-http/1.0.0')
 
@@ -89,7 +89,7 @@ export default class P2pTransport {
             await respPromise
             const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))(\r\n([^]*?)?(\r\n\r\n([^]*?)))?$/)
             if (!m) {
-                console.warn("couldn't parse resp", respString)
+                console.warn("p2pTransport: couldn't parse resp", respString)
             }
 
             const respHeaders = []
@@ -101,10 +101,12 @@ export default class P2pTransport {
                     respHeaders.push([match[1], match[2]])
                 }
                 else {
-                    console.log("couldn't parse headerLine ", headerLine)
+                    console.log("p2pTransport: couldn't parse headerLine ", headerLine)
                 }
             }
 
+            console.log("p2pTransport: Response ", m[2])
+            console.log("p2pTransport: Response body: ", m[8])
             const resp = {
                 "proto": m[1],
                 "status": m[2],
@@ -115,8 +117,7 @@ export default class P2pTransport {
             return resp;
             
         } catch (err) {
-            console.error("P2pTransport round trip error: ");
-            console.error(err);
+            console.error("p2pTransport: round trip error: ", err);
             return {
                 "error": "p2pTransport.js error: " + err,
             };
