@@ -44,7 +44,7 @@ export default class P2pLocalNode {
         console.log(`init existing ed25519 key from seed`)
         const key = await generateKeyPairFromSeed("ed25519", this.seed)
         console.log("JS: public key bytes:", key._publicKey)
-        const peerId = new PeerId(key.bytes, key)
+        const peerId = await PeerId.createFromPrivKey(key.bytes)
         const peerInfo = new PeerInfo(peerId)
 
         const peerIdStr = peerInfo.id.toB58String() 
