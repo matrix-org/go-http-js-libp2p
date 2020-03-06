@@ -16,7 +16,6 @@
 package go_http_js_libp2p
 
 import (
-	"crypto/ed25519"
 	"log"
 	"strconv"
 	"syscall/js"
@@ -34,7 +33,7 @@ type P2pLocalNode struct {
 	handleFoundProvider  func(*PeerInfo)
 }
 
-func NewP2pLocalNode(service string, key ed25519.PrivateKey, addrs []string) *P2pLocalNode {
+func NewP2pLocalNode(service string, seed []byte, addrs []string) *P2pLocalNode {
 	bridge := js.Global().Get("_go_http_bridge")
 
 	var jsAddrs js.Value
@@ -43,7 +42,6 @@ func NewP2pLocalNode(service string, key ed25519.PrivateKey, addrs []string) *P2
 		jsAddrs.Set(strconv.Itoa(i), addr)
 	}
 
-	seed := key.Seed()
 	jsSeed := js.Global().Get("Uint8Array").New(len(seed))
 	js.CopyBytesToJS(jsSeed, seed)
 

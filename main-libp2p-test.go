@@ -36,6 +36,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("pub: ", priv.Public())
 
 	node := go_http_js_libp2p.NewP2pLocalNode("org.matrix.p2p.experiment", priv.Seed(), []string{"/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/"})
 	server(node)
