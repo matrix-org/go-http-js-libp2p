@@ -15,9 +15,12 @@
 
 package go_http_js_libp2p
 
-import "syscall/js"
-import "log"
-import "strconv"
+import (
+	"crypto/ed25519"
+	"log"
+	"strconv"
+	"syscall/js"
+)
 
 type P2pLocalNode struct {
 	jsP2pLocalNode js.Value
@@ -31,7 +34,7 @@ type P2pLocalNode struct {
 	handleFoundProvider  func(*PeerInfo)
 }
 
-func NewP2pLocalNode(service string, addrs []string) *P2pLocalNode {
+func NewP2pLocalNode(service string, key ed25519.PrivateKey, addrs []string) *P2pLocalNode {
 	bridge := js.Global().Get("_go_http_bridge")
 
 	var jsAddrs js.Value
@@ -40,7 +43,11 @@ func NewP2pLocalNode(service string, addrs []string) *P2pLocalNode {
 		jsAddrs.Set(strconv.Itoa(i), addr)
 	}
 
-	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service, jsAddrs))
+	seed := key.Seed()
+	jsSeed := js.Global().Get("Uint8Array").New(len(seed))
+	js.CopyBytesToJS(jsSeed, seed)
+
+	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service, jsSeed, jsAddrs))
 	if !ok {
 		log.Fatal("couldn't create newP2pLocalNode")
 	}

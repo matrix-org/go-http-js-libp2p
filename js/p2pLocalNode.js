@@ -16,24 +16,35 @@
 'use strict'
 
 import PeerInfo from "peer-info"
+import PeerId from "peer-id"
 import Node from "./browser-bundle"
 import CID from "cids"
 import multihashing from "multihashing-async"
+import cryptoKeys  from 'libp2p-crypto/src/keys'
 
 import { promisify } from "es6-promisify"
-const createPeerInfo = promisify(PeerInfo.create);
+const generateKeyPairFromSeed = promisify(cryptoKeys.generateKeyPairFromSeed)
 
 export default class P2pLocalNode {
 
-    constructor(service, addrs) {
-        console.log(`p2plocalnode called with ${service} and ${addrs}`)
+    /**
+     * Construct a new P2P local node
+     * @param { } service  service name
+     * @param {*} seed Uint8Array: the 32 byte ed25519 private key seed (RFC 8032)
+     * @param {*} addrs addresses to listen for traffic on.
+     */
+    constructor(service, seed, addrs) {
+        console.log(`p2plocalnode called with ${service} and ${addrs} with seed`)
         this.service = service
         this.addrs = addrs
+        this.seed = seed;
     }
 
     async init() {
-        console.log(`init`)
-        const peerInfo = await createPeerInfo()
+        console.log(`init existing ed25519 key from seed`)
+        const key = await generateKeyPairFromSeed("ed25519", this.seed)
+        const peerId = PeerId.createFromBytes(key.bytes)
+        const peerInfo = new PeerInfo(peerId)
 
         const peerIdStr = peerInfo.id.toB58String() 
 //      const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`

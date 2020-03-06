@@ -15,11 +15,15 @@
 
 package main
 
-import "fmt"
-import "log"
-import "io/ioutil"
-import "net/http"
-import "github.com/matrix-org/go-http-js-libp2p/go_http_js_libp2p"
+import (
+	"crypto/ed25519"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+
+	"github.com/matrix-org/go-http-js-libp2p/go_http_js_libp2p"
+)
 
 var c chan struct{}
 
@@ -28,7 +32,12 @@ func init() {
 }
 
 func main() {
-	node := go_http_js_libp2p.NewP2pLocalNode("org.matrix.p2p.experiment", []string{"/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/"})
+	_, priv, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	node := go_http_js_libp2p.NewP2pLocalNode("org.matrix.p2p.experiment", priv.Seed(), []string{"/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/"})
 	server(node)
 
 	// due to https://github.com/golang/go/issues/27495 we can't override the DialContext
