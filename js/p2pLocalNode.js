@@ -24,6 +24,9 @@ import cryptoKeys  from 'libp2p-crypto/src/keys'
 
 import { promisify } from "es6-promisify"
 const generateKeyPairFromSeed = promisify(cryptoKeys.generateKeyPairFromSeed)
+const createPeerInfo = promisify(PeerInfo.create);
+const createPeerId = promisify(PeerId.create);
+const createFromPrivKey = promisify(PeerId.createFromPrivKey)
 
 export default class P2pLocalNode {
 
@@ -41,17 +44,13 @@ export default class P2pLocalNode {
     }
 
     async init() {
-        console.log(`init existing ed25519 key from seed`)
+        console.log(`init existing ed25519 key from seed...`)
         const key = await generateKeyPairFromSeed("ed25519", this.seed)
-        console.log("JS: public key bytes:", key._publicKey)
-        const peerId = await PeerId.createFromPrivKey(key.bytes)
+        const peerId = await createFromPrivKey(key.bytes)
+        console.log("Public key bytes: ", key.public)
         const peerInfo = new PeerInfo(peerId)
 
         const peerIdStr = peerInfo.id.toB58String() 
-//      const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`
-//      const wsAddr = `/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star`
-//      peerInfo.multiaddrs.add(webrtcAddr)
-//      peerInfo.multiaddrs.add(wsAddr)
 
         for (const addr of this.addrs) {
             peerInfo.multiaddrs.add(addr)
@@ -118,9 +117,10 @@ export default class P2pLocalNode {
             })
         }
 
+        console.log("p2p starting now")
         node.start((err) => {
             if (err) {
-                console.error(err);
+                console.error("p2p start node error:",err);
                 return;
             }
 
@@ -130,7 +130,7 @@ export default class P2pLocalNode {
                 console.log('Node %s is providing %s', peerIdStr, cid.toBaseEncodedString())
             })
 
-            console.log(`Node ${peerIdStr} is listening o/`)
+            console.log(`p2p Node ${peerIdStr} is listening o/`)
             node.peerInfo.multiaddrs.toArray().forEach(ma => {
                 console.log("Listening on: ", ma.toString())
             })

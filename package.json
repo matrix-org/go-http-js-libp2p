@@ -27,7 +27,7 @@
     "libp2p-websocket-star": "~0.10.2",
     "libp2p-websockets": "~0.12.2",
     "multihashing-async": "^0.8.0",
-    "peer-id": "^0.13.9",
+    "peer-id": "0.12.5",
     "peer-info": "~0.15.1",
     "pull-concat": "^1.1.1"
   }
