@@ -15,10 +15,12 @@
 
 package go_http_js_libp2p
 
-import "net"
-import "log"
-import "time"
-import "syscall/js"
+import (
+	"log"
+	"net"
+	"syscall/js"
+	"time"
+)
 
 type goJsAddr struct {
 	string string
@@ -44,6 +46,10 @@ type goJsConn struct {
 	localAddr  net.Addr
 	remoteAddr net.Addr
 	jsGoJsConn js.Value
+
+	// We can read huge responses in JS-land, but Go will only read in small (4k?) chunks,
+	// so we need to be able to serve up the rest of a response via this buffer
+	buffer []byte
 }
 
 func NewGoJsConn(jsGoJsConn js.Value) *goJsConn {
@@ -65,16 +71,27 @@ func NewGoJsConn(jsGoJsConn js.Value) *goJsConn {
 // Read can be made to time out and return an Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
 func (pc goJsConn) Read(b []byte) (n int, err error) {
+	if len(pc.buffer) > 0 {
+		// don't Await another read until we've given everything from the previous response
+		c := copy(b, pc.buffer)
+		if c < len(pc.buffer) {
+			remaining := len(pc.buffer) - len(b)
+			pc.buffer = pc.buffer[c:]
+			log.Printf("goJsConn: Still have even more data to read (%d bytes)\n", remaining)
+		}
+		return c, nil
+	}
 	//log.Println("Awaiting read from JS")
 	val, ok := Await(pc.jsGoJsConn.Call("read"))
 	if ok == false {
-		log.Fatal("Failed to read")
+		log.Fatal("goJsConn: Failed to read")
 	}
-	//log.Printf("Read from goJsConn: %s\n", val.String())
 	buf := []byte(val.String())
 	c := copy(b, buf)
 	if c < len(buf) {
-		log.Fatal("Insufficient read buffer; dropping data")
+		remaining := len(buf) - len(b)
+		pc.buffer = buf[c:]
+		log.Printf("goJsConn: Still have more data to read (%d bytes)\n", remaining)
 	}
 	return c, nil
 }
