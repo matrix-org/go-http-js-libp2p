@@ -87,7 +87,7 @@ export default class P2pTransport {
             )
 
             await respPromise
-            const m = respString.match(/^(HTTP\/1.0) ((.*?) (.*?))(\r\n([^]*?)?(\r\n\r\n([^]*?)))?$/)
+            const m = respString.match(/^(HTTP\/1.1) ((.*?) (.*?))(\r\n([^]*?)?(\r\n\r\n([^]*?)))?$/)
             if (!m) {
                 console.warn("p2pTransport: couldn't parse resp", respString)
             }

@@ -25,10 +25,18 @@ export default class P2pListener {
         this.p2pLocalNode = p2pLocalNode
         const protocol = '/libp2p-http/1.0.0';
 
+        /*
         const node = p2pLocalNode.node;
         node.handle(protocol, async (protocol, conn) => {
             const getPeerInfo = promisify(conn.getPeerInfo.bind(conn))
             const pi = await getPeerInfo()
+            console.log(pi.id.toB58String(), " -> ", p2pLocalNode.idStr)
+            const res = await global._go_js_server.p2p(reqString)
+            if (res.error) {
+                console.error(`dendrite-sw.js: v${version} Error for request: ${event.request.url} => ${res.error}`)
+                return
+            }
+            const respString = res.result;
 
             // create the go-server-facing side of the connection
             const goJsConn = new GoJsConn(p2pLocalNode.idStr, pi.id.toB58String())
@@ -44,7 +52,7 @@ export default class P2pListener {
                 conn,
             )
         })
-        console.log("Awaiting p2p connections for protocol: ", protocol);    
+        console.log("Awaiting p2p connections for protocol: ", protocol);     */
     }
 
     // implemented in Go

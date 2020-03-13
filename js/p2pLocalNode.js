@@ -21,6 +21,8 @@ import Node from "./browser-bundle"
 import CID from "cids"
 import multihashing from "multihashing-async"
 import cryptoKeys  from 'libp2p-crypto/src/keys'
+import { pull } from "pull-stream"
+import concat from "pull-stream/sinks/concat"
 
 import { promisify } from "es6-promisify"
 const generateKeyPairFromSeed = promisify(cryptoKeys.generateKeyPairFromSeed)
@@ -140,6 +142,104 @@ export default class P2pLocalNode {
             // NOTE: to stop the node
             // node.stop((err) => {})
         })
+
+        const protocol = '/libp2p-http/1.0.0';
+        console.log("Preparing handler for protocol: ", protocol)
+        node.handle(protocol, async (protocol, conn) => {
+            const getPeerInfo = promisify(conn.getPeerInfo.bind(conn))
+            const pi = await getPeerInfo()
+            console.log("Incoming: ", pi.id.toB58String(), " -> ", peerIdStr)
+
+            let reqBuffer = ''
+            let reqResolve
+            const reqPromise = new Promise((resolve, reject) => { reqResolve = resolve })
+            pull(
+                conn,
+                concat((err, data) => {
+                    if (err) throw err
+                    reqBuffer = data
+                    reqResolve(reqBuffer)
+                }),
+            )
+            const reqString = await reqPromise;
+            const result = await global._go_js_server.p2p(reqString)
+            let respString = ''
+            if (result.error) {
+                console.error(`p2pLocalNode: Error for request: ${result.error}`)
+                console.error(reqString)
+                // TODO: Send some error response?
+            } else {
+                respString = result.result;
+                console.log(respString);
+            }
+            pull(
+                pull.values([respString]),
+                conn,
+            )
+
+            
+/*
+
+            let readBuf = '';
+            let writeBuf = '';
+            let writeCb;
+            pull(conn, function(read) {
+                read(null, function next(end, data) {
+                    if (end === true) return
+                    if (end) throw end
+                    const reqString = new TextDecoder("utf-8").decode(data);
+                    global._go_js_server.p2p(reqString).then((res) => {
+                        if (res.error) {
+                            console.error(`p2pLocalNode: Error for request: ${res.error}`)
+                            console.error(reqString)
+                        } else {
+                            const respString = res.result;
+                            writeBuf = respString;
+                            console.log("p2pLocalNode Assigned write buffer:")
+                            console.log(respString);
+                            if (writeCb) {
+                                console.log("p2pLocalNode invoking writeCb")
+                                writeCb(null, writeBuf)
+                            }
+                        }
+                        read(null, next)
+                    })
+                })
+            });
+
+            pull(
+                pull.values([reqString]),
+                conn,
+            )
+
+            pull(function (end, cb) {
+                console.log("p2pLocalNode pull fn called, end:",end)
+                if (end) return cb(end)
+                if (writeBuf.length > 0) {
+                    // FIXME: only return true if the connection is closed and this is the end of the stream
+                    console.log("p2pLocalNode invoking callback with data:")
+                    console.log(writeBuf);
+                    cb(true, writeBuf)
+                    writeBuf = ''
+                }
+                else {
+                    console.log("Deferring callback")
+                    // defer the callback
+                    writeCb = cb
+                }
+            }, conn)
+            return;
+            pull(
+                conn,
+                goJsConn.fillReadSink.bind(goJsConn),
+            )
+
+            pull(
+                goJsConn.consumeWriteSource.bind(goJsConn),
+                conn,
+            ) */
+        })
+        console.log("Awaiting p2p connections for protocol: ", protocol);  
     }
 
     // implemented in Go:
