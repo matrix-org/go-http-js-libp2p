@@ -30,7 +30,7 @@ type P2pLocalNode struct {
 	handlePeerDiscover   func(*PeerInfo)
 	handlePeerConnect    func(*PeerInfo)
 	handlePeerDisconnect func(*PeerInfo)
-	handleFoundProvider  func(*PeerInfo)
+	handleFoundProviders func([]PeerInfo)
 }
 
 func NewP2pLocalNode(service string, seed []byte, addrs []string) *P2pLocalNode {
@@ -60,7 +60,7 @@ func NewP2pLocalNode(service string, seed []byte, addrs []string) *P2pLocalNode 
 	pn.jsP2pLocalNode.Set("onPeerDiscover", js.FuncOf(pn.onPeerDiscover))
 	pn.jsP2pLocalNode.Set("onPeerConnect", js.FuncOf(pn.onPeerConnect))
 	pn.jsP2pLocalNode.Set("onPeerDisconnect", js.FuncOf(pn.onPeerDisconnect))
-	pn.jsP2pLocalNode.Set("onFoundProvider", js.FuncOf(pn.onFoundProvider))
+	pn.jsP2pLocalNode.Set("onFoundProviders", js.FuncOf(pn.onFoundProviders))
 
 	return pn
 }
@@ -98,10 +98,16 @@ func (pn *P2pLocalNode) onPeerDisconnect(this js.Value, inputs []js.Value) inter
 	return nil
 }
 
-func (pn *P2pLocalNode) onFoundProvider(this js.Value, inputs []js.Value) interface{} {
-	pi := NewPeerInfo(inputs[0])
-	if pn.handleFoundProvider != nil {
-		pn.handleFoundProvider(pi)
+func (pn *P2pLocalNode) onFoundProviders(this js.Value, inputs []js.Value) interface{} {
+	jsProviders := inputs[0]
+	peerInfos := make([]PeerInfo, jsProviders.Length())
+	for i := 0; i < jsProviders.Length(); i++ {
+		p := jsProviders.Index(i)
+		pi := NewPeerInfo(p)
+		peerInfos[i] = *pi
+	}
+	if pn.handleFoundProviders != nil {
+		pn.handleFoundProviders(peerInfos)
 	}
 	return nil
 }
@@ -118,6 +124,6 @@ func (pn *P2pLocalNode) RegisterPeerDisconnect(handler func(*PeerInfo)) {
 	pn.handlePeerDisconnect = handler
 }
 
-func (pn *P2pLocalNode) RegisterFoundProvider(handler func(*PeerInfo)) {
-	pn.handleFoundProvider = handler
+func (pn *P2pLocalNode) RegisterFoundProviders(handler func([]PeerInfo)) {
+	pn.handleFoundProviders = handler
 }

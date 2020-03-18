@@ -110,10 +110,8 @@ export default class P2pLocalNode {
                 if (err) { throw err }
                 console.log('Connected peers: ', connectedPeers, " Discovered peers: ", discoveredPeers, ' Found providers:', providers.map(p => p.id.toB58String()))
                 providers = providers.filter(p => p.id.toB58String() != peerIdStr)
-                if (this.onFoundProvider) {
-                    for (const p of providers) {
-                        this.onFoundProvider(p)
-                    }
+                if (this.onFoundProviders) {
+                    this.onFoundProviders(providers)
                 }
                 setTimeout(findProviders, 5000)
             })
@@ -246,5 +244,5 @@ export default class P2pLocalNode {
     // onPeerDiscover(peerInfo) {}
     // onPeerConnect(peerInfo) {}
     // onPeerDisconnect(peerInfo) {}
-    // onFoundProvider(peerInfo) {}
+    // onFoundProviders([]peerInfo) {}
 }

@@ -48,26 +48,28 @@ func main() {
 	}
 
 	// try to ping every peer that we discover which supports this service
-	node.RegisterFoundProvider(func(pi *go_http_js_libp2p.PeerInfo) {
+	node.RegisterFoundProviders(func(peerInfos []go_http_js_libp2p.PeerInfo) {
 		go func() {
-			log.Printf("Trying to GET libp2p-http://%s/ping", pi.Id)
+			for _, pi := range peerInfos {
+				log.Printf("Trying to GET libp2p-http://%s/ping", pi.Id)
 
-			req, err := http.NewRequest("GET", fmt.Sprintf("libp2p-http://%s/ping", pi.Id), nil)
-			req.Header.Add("Testing-Headers", "testing")
-			resp, err := client.Do(req)
-			if err != nil {
-				log.Fatal("Can't make request")
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode == http.StatusOK {
-				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				req, err := http.NewRequest("GET", fmt.Sprintf("libp2p-http://%s/ping", pi.Id), nil)
+				req.Header.Add("Testing-Headers", "testing")
+				resp, err := client.Do(req)
 				if err != nil {
-					log.Fatal(err)
+					log.Fatal("Can't make request")
 				}
-				bodyString := string(bodyBytes)
-				log.Printf("Received body: %s", bodyString)
-				log.Printf("Received headers: %r", resp.Header)
+				defer resp.Body.Close()
+
+				if resp.StatusCode == http.StatusOK {
+					bodyBytes, err := ioutil.ReadAll(resp.Body)
+					if err != nil {
+						log.Fatal(err)
+					}
+					bodyString := string(bodyBytes)
+					log.Printf("Received body: %s", bodyString)
+					log.Printf("Received headers: %r", resp.Header)
+				}
 			}
 		}()
 	})
