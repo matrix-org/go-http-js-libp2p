@@ -107,7 +107,11 @@ export default class P2pLocalNode {
 
         const findProviders = () => {
             node.contentRouting.findProviders(cid, { maxTimeout: 5000 }, (err, providers) => {
-                if (err) { throw err }
+                if (err) {
+                    setTimeout(findProviders, 30 * 1000)
+                    console.error("Failed to find providers:", err)
+                    return
+                }
                 console.log('Connected peers: ', connectedPeers, " Discovered peers: ", discoveredPeers, ' Found providers:', providers.map(p => p.id.toB58String()))
                 providers = providers.filter(p => p.id.toB58String() != peerIdStr)
                 if (this.onFoundProviders) {
