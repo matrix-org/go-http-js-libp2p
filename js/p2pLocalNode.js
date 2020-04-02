@@ -86,7 +86,7 @@ export default class P2pLocalNode {
         let connPeersSet = new Set();
         node.on('peer:connect', (pi) => {
             const idStr = pi.id.toB58String()
-            connPeersSet.add(isStr);
+            connPeersSet.add(idStr);
             if (connPeersSet.size < 20) {
                 console.debug('Got connection to: ' + idStr)
             } else if (connPeersSet.size === 20) {
@@ -123,13 +123,8 @@ export default class P2pLocalNode {
             })
         }
 
-        console.log("p2p starting now")
-        node.start((err) => {
-            if (err) {
-                console.error("p2p start node error:",err);
-                return;
-            }
-
+        const provideContent = () => {
+            console.log("Attempting to provide ", cid.toBaseEncodedString())
             // advertise our magic CID to announce our participation in this specific network
             node.contentRouting.provide(cid, (err) => {
                 if (err) {
@@ -139,13 +134,24 @@ export default class P2pLocalNode {
                 console.log('Node %s is providing %s', peerIdStr, cid.toBaseEncodedString())
             })
 
+            setTimeout(provideContent, 1000 * 60 * 5); // every 5min
+        }
+
+        console.log("p2p starting now")
+        node.start((err) => {
+            if (err) {
+                console.error("p2p start node error:",err);
+                return;
+            }
+
+            provideContent();
+
             console.log(`p2p Node ${peerIdStr} is listening o/`)
             node.peerInfo.multiaddrs.toArray().forEach(ma => {
                 console.log("Listening on: ", ma.toString())
             })
 
             findProviders()
-
             // NOTE: to stop the node
             // node.stop((err) => {})
         })
