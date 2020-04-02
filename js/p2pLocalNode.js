@@ -39,7 +39,7 @@ export default class P2pLocalNode {
      * @param {*} addrs addresses to listen for traffic on.
      */
     constructor(service, seed, addrs) {
-        console.log(`p2plocalnode called with ${service} and ${addrs} with seed`)
+        console.log(`P2pLocalNode called with ${service} and ${addrs} with seed`)
         this.service = service
         this.addrs = addrs
         this.seed = seed;
@@ -70,12 +70,12 @@ export default class P2pLocalNode {
         this.idStr = peerIdStr
 
 
-        let discoveredPeers = 0;
+        let discoveredPeersSet = new Set();
         node.on('peer:discovery', (pi) => {
-            discoveredPeers += 1;
-            if (discoveredPeers < 20) {
+            discoveredPeersSet.add(pi.id.toB58String())
+            if (discoveredPeersSet.size < 20) {
                 console.debug('Discovered a peer:', pi.id.toB58String());
-            } else if (discoveredPeers === 20) {
+            } else if (discoveredPeersSet.size === 20) {
                 console.debug("Discovered many peers: silencing output.");
             }
 
@@ -83,13 +83,13 @@ export default class P2pLocalNode {
             if (this.onPeerDiscover) this.onPeerDiscover(pi)
         })
 
-        let connectedPeers = 0;
+        let connPeersSet = new Set();
         node.on('peer:connect', (pi) => {
-            connectedPeers += 1;
             const idStr = pi.id.toB58String()
-            if (connectedPeers < 20) {
+            connPeersSet.add(isStr);
+            if (connPeersSet.size < 20) {
                 console.debug('Got connection to: ' + idStr)
-            } else if (connectedPeers === 20) {
+            } else if (connPeersSet.size === 20) {
                 console.debug("Connected to many peers: silencing output.");
             }
             // tell go
@@ -98,6 +98,8 @@ export default class P2pLocalNode {
 
         node.on('peer:disconnect', (pi) => {
             const idStr = pi.id.toB58String()
+            connPeersSet.delete(idStr)
+            console.debug(idStr + " went away")
             // tell go
             if (this.onPeerDisonnect) this.onPeerDisconnect(pi)
         })
@@ -112,7 +114,7 @@ export default class P2pLocalNode {
                     console.error("Failed to find providers:", err)
                     return
                 }
-                console.log('Connected peers: ', connectedPeers, " Discovered peers: ", discoveredPeers, ' Found providers:', providers.map(p => p.id.toB58String()))
+                console.log('Connected peers: ', connPeersSet.size, " Discovered peers: ", discoveredPeersSet.size, ' Found providers:', providers.map(p => p.id.toB58String()))
                 providers = providers.filter(p => p.id.toB58String() != peerIdStr)
                 if (this.onFoundProviders) {
                     this.onFoundProviders(providers)
@@ -130,7 +132,10 @@ export default class P2pLocalNode {
 
             // advertise our magic CID to announce our participation in this specific network
             node.contentRouting.provide(cid, (err) => {
-                if (err) { throw err }
+                if (err) {
+                    console.error("failed to provide CID:", cid, err)
+                    throw err;
+                }
                 console.log('Node %s is providing %s', peerIdStr, cid.toBaseEncodedString())
             })
 
