@@ -70,7 +70,7 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		"body":    body,
 	})
 
-	jsResponse, ok := Await(pt.jsP2pTransport.Call("roundTrip", jsReq))
+	jsResponse, _ := Await(pt.jsP2pTransport.Call("roundTrip", jsReq))
 
 	if jsResponse.Get("error").Truthy() {
 		return nil, fmt.Errorf("JS error: %s", jsResponse.Get("error").String())
