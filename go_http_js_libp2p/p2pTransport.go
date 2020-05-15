@@ -17,7 +17,6 @@ package go_http_js_libp2p
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -52,7 +51,6 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		body = string(b)
 	}
 
-	log.Printf("Req headers are %r", req.Header)
 	reqHeaders := js.Global().Get("Array").New()
 	i := 0
 	for name, values := range req.Header {
@@ -78,8 +76,6 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("JS error: %s", jsResponse.Get("error").String())
 	}
 
-	log.Printf("jsResponse is %+v, ok is %+v\n", jsResponse.Get("status"), ok)
-
 	respHeaders := make(map[string][]string)
 	jsRespHeaders := jsResponse.Get("headers")
 	for i := 0; i < jsRespHeaders.Length(); i++ {
@@ -95,7 +91,7 @@ func (pt *p2pTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		ProtoMajor: 1,
 		ProtoMinor: 0,
 		Header:     respHeaders,
-		Body:       NewPeerReadCloser(jsResponse.Get("body").String()), // FIXME: support streaming resp bodies
+		Body:       ioutil.NopCloser(strings.NewReader(jsResponse.Get("body").String())), // FIXME: support streaming resp bodies
 		Request:    req,
 	}
 
@@ -132,24 +128,4 @@ func Await(v js.Value) (result js.Value, ok bool) {
 	v.Call("then", onResolve, onReject)
 	<-done
 	return
-}
-
-/////////////
-
-type peerReadCloser struct {
-	reader io.Reader
-}
-
-func NewPeerReadCloser(body string) *peerReadCloser {
-	return &peerReadCloser{
-		reader: strings.NewReader(body),
-	}
-}
-
-func (prc *peerReadCloser) Read(p []byte) (n int, err error) {
-	return prc.reader.Read(p)
-}
-
-func (prc *peerReadCloser) Close() (err error) {
-	return nil
 }
