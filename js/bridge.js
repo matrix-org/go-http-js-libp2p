@@ -16,11 +16,14 @@
 import P2pLocalNode from './p2pLocalNode.js'
 import P2pTransport from './p2pTransport.js'
 
+global._go_libp2p_nodes = [];
+
 global._go_http_bridge = {
     newP2pLocalNode: async (service, seed, addrs, namespace) => {
         try {
             const p2pLocalNode = new P2pLocalNode(service, seed, addrs, namespace);
             await p2pLocalNode.init();
+            global._go_libp2p_nodes = global._go_libp2p_nodes.push(p2pLocalNode);
             return p2pLocalNode;
         }
         catch (err) {

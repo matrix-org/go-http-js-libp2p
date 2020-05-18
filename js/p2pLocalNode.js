@@ -47,6 +47,10 @@ export default class P2pLocalNode {
         this.cbNamespace = cbNamespace || 'p2p';
     }
 
+    stop() {
+        this.node.stop();
+    }
+
     async init() {
         const key = await generateKeyPairFromSeed("ed25519", this.seed)
         const peerId = await createFromPrivKey(key.bytes)
