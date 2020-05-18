@@ -17,9 +17,9 @@ import P2pLocalNode from './p2pLocalNode.js'
 import P2pTransport from './p2pTransport.js'
 
 global._go_http_bridge = {
-    newP2pLocalNode: async (service, seed, addrs) => {
+    newP2pLocalNode: async (service, seed, addrs, namespace) => {
         try {
-            const p2pLocalNode = new P2pLocalNode(service, seed, addrs);
+            const p2pLocalNode = new P2pLocalNode(service, seed, addrs, namespace);
             await p2pLocalNode.init();
             return p2pLocalNode;
         }

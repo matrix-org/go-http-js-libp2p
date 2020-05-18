@@ -1,9 +1,19 @@
 // Copyright 2018 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-require("./js/bridge.js");
+require("regenerator-runtime");
+require("./lib/bridge.js");
+const rendezvous = require("libp2p-websocket-star-rendezvous");
 
 (() => {
+	// start the rendezvous server
+	rendezvous.start({
+		port: 9999,
+		host: "127.0.0.1",
+	}).then(() => {
+		console.log("rendezvous server started on :9999")
+	});
+
 	// Map multiple JavaScript environments to a single common API,
 	// preferring web standards over Node.js API.
 	//

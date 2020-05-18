@@ -34,7 +34,7 @@ type P2pLocalNode struct {
 }
 
 // NewP2pLocalNode creates a new P2pLocalNode and starts it.
-func NewP2pLocalNode(service string, seed []byte, addrs []string) *P2pLocalNode {
+func NewP2pLocalNode(service string, seed []byte, addrs []string, namespace string) *P2pLocalNode {
 	bridge := js.Global().Get("_go_http_bridge")
 
 	var jsAddrs js.Value
@@ -46,7 +46,7 @@ func NewP2pLocalNode(service string, seed []byte, addrs []string) *P2pLocalNode 
 	jsSeed := js.Global().Get("Uint8Array").New(len(seed))
 	js.CopyBytesToJS(jsSeed, seed)
 
-	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service, jsSeed, jsAddrs))
+	jsP2pLocalNode, ok := Await(bridge.Call("newP2pLocalNode", service, jsSeed, jsAddrs, namespace))
 	if !ok {
 		log.Fatal("couldn't create newP2pLocalNode")
 	}

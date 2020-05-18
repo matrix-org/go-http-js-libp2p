@@ -24,29 +24,34 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"syscall/js"
 	"testing"
+	"time"
 
 	go_http_js_libp2p "github.com/matrix-org/go-http-js-libp2p"
 )
 
 func TestPingPong(t *testing.T) {
-	// we assume that the rendezvous server is up already
-	n1 := RunNode()
-	n2 := RunNode()
-	<-n1
-	<-n2
+	// we assume that the rendezvous server is up already - see wasm_exec.js which spins it up
+	var wg sync.WaitGroup
+	wg.Add(2)
+	RunNode(t, &wg, "foo")
+	time.Sleep(100 * time.Millisecond)
+	RunNode(t, &wg, "bar")
+	wg.Wait()
 }
 
-func RunNode() chan struct{} {
-	ch := make(chan struct{}, 0)
+func RunNode(t *testing.T, wg *sync.WaitGroup, namespace string) {
+	mux := http.NewServeMux()
 	_, priv, err := ed25519.GenerateKey(nil)
 	if err != nil {
-		panic(err)
+		t.Fatalf("Failed to make ed25519 key: %s", err)
 	}
-	fmt.Println("pub: ", priv.Public())
 
-	node := go_http_js_libp2p.NewP2pLocalNode("org.matrix.p2p.experiment", priv.Seed(), []string{"/ip4/127.0.0.1/tcp/9090/ws/p2p-websocket-star/"})
+	node := go_http_js_libp2p.NewP2pLocalNode(
+		"org.matrix.p2p.experiment", priv.Seed(), []string{"/ip4/127.0.0.1/tcp/9999/ws/p2p-websocket-star/"}, namespace,
+	)
 
 	client := &http.Client{
 		Transport: go_http_js_libp2p.NewP2pTransport(node),
@@ -56,41 +61,49 @@ func RunNode() chan struct{} {
 	node.RegisterFoundProviders(func(peerInfos []go_http_js_libp2p.PeerInfo) {
 		go func() {
 			for _, pi := range peerInfos {
-				log.Printf("Trying to GET libp2p-http://%s/ping", pi.Id)
+				if pi.Id == node.Id {
+					continue // don't ping ourselves!
+				}
+				log.Printf("Trying to GET matrix://%s/ping", pi.Id)
 
-				req, err := http.NewRequest("GET", fmt.Sprintf("libp2p-http://%s/ping", pi.Id), nil)
+				req, err := http.NewRequest("GET", fmt.Sprintf("matrix://%s/ping", pi.Id), nil)
 				req.Header.Add("Testing-Headers", "testing")
 				resp, err := client.Do(req)
 				if err != nil {
-					log.Fatal("Can't make request")
+					t.Fatalf("Can't make request: %s", err)
 				}
 				defer resp.Body.Close()
 
-				if resp.StatusCode == http.StatusOK {
-					bodyBytes, err := ioutil.ReadAll(resp.Body)
-					if err != nil {
-						log.Fatal(err)
-					}
-					bodyString := string(bodyBytes)
-					log.Printf("Received body: %s", bodyString)
-					log.Printf("Received headers: %v", resp.Header)
+				if resp.StatusCode != 200 {
+					t.Fatalf("Request returned %s", resp.Status)
+					return
 				}
+
+				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Fatal(err)
+				}
+				bodyString := string(bodyBytes)
+				log.Printf("Received body: %s", bodyString)
+				log.Printf("Received headers: %v", resp.Header)
+				if bodyString != "pong" {
+					t.Fatalf("HTTP response body got %s want 'pong'", bodyString)
+				}
+				wg.Done()
 			}
-			close(ch)
 		}()
 	})
 
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "pong")
 	})
 
 	log.Println("starting server")
 
 	s := JSServer{
-		Mux: http.DefaultServeMux,
+		Mux: mux,
 	}
-	go s.ListenAndServe("p2p")
-	return ch
+	go s.ListenAndServe(namespace)
 }
 
 // JSServer exposes an HTTP-like server interface which allows JS to 'send' requests to it.

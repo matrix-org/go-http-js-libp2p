@@ -37,19 +37,19 @@ export default class P2pLocalNode {
      * @param { } service  service name
      * @param {*} seed Uint8Array: the 32 byte ed25519 private key seed (RFC 8032)
      * @param {*} addrs addresses to listen for traffic on.
+     * @param {string} cbNamespace The namespace that will be called on _go_js_server, defaults to 'p2p'.
      */
-    constructor(service, seed, addrs) {
+    constructor(service, seed, addrs, cbNamespace) {
         console.log(`P2pLocalNode called with ${service} and ${addrs} with seed`)
         this.service = service
         this.addrs = addrs
         this.seed = seed;
+        this.cbNamespace = cbNamespace || 'p2p';
     }
 
     async init() {
-        console.log(`init existing ed25519 key from seed...`)
         const key = await generateKeyPairFromSeed("ed25519", this.seed)
         const peerId = await createFromPrivKey(key.bytes)
-        console.log("Public key bytes: ", key.public)
         const peerInfo = new PeerInfo(peerId)
 
         const peerIdStr = peerInfo.id.toB58String() 
@@ -58,8 +58,7 @@ export default class P2pLocalNode {
             peerInfo.multiaddrs.add(addr)
         }
 
-        console.log(`added`, peerInfo);
-	    console.log("id: " + JSON.stringify(peerInfo.id));
+	    console.log(peerIdStr,": Starting up");
 
         const node = new Node({
             peerInfo
@@ -124,7 +123,7 @@ export default class P2pLocalNode {
         }
 
         const provideContent = () => {
-            console.log("Attempting to provide ", cid.toBaseEncodedString())
+            console.log(peerIdStr, ": Attempting to provide ", cid.toBaseEncodedString())
             // advertise our magic CID to announce our participation in this specific network
             node.contentRouting.provide(cid, (err) => {
                 if (err) {
@@ -137,16 +136,15 @@ export default class P2pLocalNode {
             setTimeout(provideContent, 1000 * 60 * 5); // every 5min
         }
 
-        console.log("p2p starting now")
         node.start((err) => {
             if (err) {
-                console.error("p2p start node error:",err);
+                console.error(peerIdStr, ": p2p start node error:",err);
                 return;
             }
 
             provideContent();
 
-            console.log(`p2p Node ${peerIdStr} is listening o/`)
+            console.log(`${peerIdStr} is listening o/`)
             node.peerInfo.multiaddrs.toArray().forEach(ma => {
                 console.log("Listening on: ", ma.toString())
             })
@@ -157,11 +155,10 @@ export default class P2pLocalNode {
         })
 
         const protocol = '/libp2p-http/1.0.0';
-        console.log("Preparing handler for protocol: ", protocol)
         node.handle(protocol, async (protocol, conn) => {
             const getPeerInfo = promisify(conn.getPeerInfo.bind(conn))
             const pi = await getPeerInfo()
-            console.log("Incoming: ", pi.id.toB58String(), " -> ", peerIdStr)
+            console.log(peerIdStr, ": incoming conn from ", pi.id.toB58String())
 
             let reqBuffer = ''
             let reqResolve
@@ -175,7 +172,7 @@ export default class P2pLocalNode {
                 }),
             )
             const reqString = await reqPromise;
-            const result = await global._go_js_server.p2p(reqString)
+            const result = await global._go_js_server[this.cbNamespace](reqString)
             let respString = ''
             if (result.error) {
                 console.error(`p2pLocalNode: Error for request: ${result.error}`)
@@ -190,7 +187,7 @@ export default class P2pLocalNode {
                 conn,
             )
         })
-        console.log("Awaiting p2p connections for protocol: ", protocol);  
+        console.log(peerIdStr, ": awaiting p2p connections for protocol: ", protocol);  
     }
 
     // implemented in Go:
