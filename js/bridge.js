@@ -23,7 +23,7 @@ global._go_http_bridge = {
         try {
             const p2pLocalNode = new P2pLocalNode(service, seed, addrs, namespace);
             await p2pLocalNode.init();
-            global._go_libp2p_nodes = global._go_libp2p_nodes.push(p2pLocalNode);
+            global._go_libp2p_nodes.push(p2pLocalNode);
             return p2pLocalNode;
         }
         catch (err) {
