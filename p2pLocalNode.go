@@ -33,6 +33,7 @@ type P2pLocalNode struct {
 	handleFoundProviders func([]PeerInfo)
 }
 
+// NewP2pLocalNode creates a new P2pLocalNode and starts it.
 func NewP2pLocalNode(service string, seed []byte, addrs []string) *P2pLocalNode {
 	bridge := js.Global().Get("_go_http_bridge")
 

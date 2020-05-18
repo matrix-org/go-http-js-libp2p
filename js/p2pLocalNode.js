@@ -189,68 +189,6 @@ export default class P2pLocalNode {
                 pull.values([respString]),
                 conn,
             )
-
-            
-/*
-
-            let readBuf = '';
-            let writeBuf = '';
-            let writeCb;
-            pull(conn, function(read) {
-                read(null, function next(end, data) {
-                    if (end === true) return
-                    if (end) throw end
-                    const reqString = new TextDecoder("utf-8").decode(data);
-                    global._go_js_server.p2p(reqString).then((res) => {
-                        if (res.error) {
-                            console.error(`p2pLocalNode: Error for request: ${res.error}`)
-                            console.error(reqString)
-                        } else {
-                            const respString = res.result;
-                            writeBuf = respString;
-                            console.log("p2pLocalNode Assigned write buffer:")
-                            console.log(respString);
-                            if (writeCb) {
-                                console.log("p2pLocalNode invoking writeCb")
-                                writeCb(null, writeBuf)
-                            }
-                        }
-                        read(null, next)
-                    })
-                })
-            });
-
-            pull(
-                pull.values([reqString]),
-                conn,
-            )
-
-            pull(function (end, cb) {
-                console.log("p2pLocalNode pull fn called, end:",end)
-                if (end) return cb(end)
-                if (writeBuf.length > 0) {
-                    // FIXME: only return true if the connection is closed and this is the end of the stream
-                    console.log("p2pLocalNode invoking callback with data:")
-                    console.log(writeBuf);
-                    cb(true, writeBuf)
-                    writeBuf = ''
-                }
-                else {
-                    console.log("Deferring callback")
-                    // defer the callback
-                    writeCb = cb
-                }
-            }, conn)
-            return;
-            pull(
-                conn,
-                goJsConn.fillReadSink.bind(goJsConn),
-            )
-
-            pull(
-                goJsConn.consumeWriteSource.bind(goJsConn),
-                conn,
-            ) */
         })
         console.log("Awaiting p2p connections for protocol: ", protocol);  
     }

@@ -30,6 +30,7 @@ type p2pTransport struct {
 	jsP2pTransport js.Value
 }
 
+// NewP2pTransport returns an http.RoundTripper
 func NewP2pTransport(p2pLocalNode *P2pLocalNode) *p2pTransport {
 	bridge := js.Global().Get("_go_http_bridge")
 	pt := &p2pTransport{

@@ -31,3 +31,4 @@ global._go_http_bridge = {
         return new P2pTransport(p2pLocalNode)
     },
 }
+

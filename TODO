@@ -1,5 +1,0 @@
-TODO:
-
-* check we close our streams properly and generally handle memleaks
-* turn the test jig into proper unit tests (both for go<->js loopback and then js<->js loopback)
-* make bodies stream
