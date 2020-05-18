@@ -9,7 +9,11 @@ To test:
 $ yarn install
 $ ./test.sh
 ```
-
+Alternatively:
+```bash
+$ docker build -t ghjl .
+$ docker run --rm ghjl
+```
 
 The tests will spin up a rendezvous server. For reference, you can spin one up like this:
 
